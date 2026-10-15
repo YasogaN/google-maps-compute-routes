@@ -61,9 +61,17 @@ describe("computeRoutes (live)", () => {
   it("computes a route matrix", async () => {
     const matrix = await computeRouteMatrix({ origins: [ORIGIN], destinations: [DESTINATION], region: "lk" });
 
-    expect(matrix.rows).toHaveLength(1);
-    expect(matrix.rows[0]!.elements).toHaveLength(1);
-    expect(matrix.rows[0]!.elements[0]!.status).toBe("OK");
-    expect(matrix.rows[0]!.elements[0]!.duration?.seconds).toBeGreaterThan(0);
+    expect(matrix.elements).toHaveLength(1);
+    expect(matrix.elements[0]!.status).toBe("OK");
+    expect(matrix.elements[0]!.condition).toBe("ROUTE_EXISTS");
+    expect(matrix.elements[0]!.duration?.seconds).toBeGreaterThan(0);
+    expect(matrix.elements[0]!.static_duration?.seconds).toBeGreaterThan(0);
+  });
+
+  it("honours the travel mode", async () => {
+    const driving = (await computeRoutes({ origin: ORIGIN, destination: DESTINATION, region: "lk", travel_mode: "driving", clean: true })) as ParsedRoute[];
+    const walking = (await computeRoutes({ origin: ORIGIN, destination: DESTINATION, region: "lk", travel_mode: "walking", clean: true })) as ParsedRoute[];
+
+    expect(walking[0]!.duration.seconds).toBeGreaterThan(driving[0]!.duration.seconds);
   });
 });

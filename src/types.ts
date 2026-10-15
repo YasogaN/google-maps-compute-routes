@@ -116,17 +116,14 @@ export interface MatrixElement {
     origin_index: number;
     destination_index: number;
     status: "OK" | "ERROR";
+    condition: "ROUTE_EXISTS" | "ROUTE_NOT_FOUND";
     distance: { meters: number; text: string } | null;
     duration: { seconds: number; text: string } | null;
-    duration_in_traffic: { seconds: number; text: string } | null;
-}
-
-export interface MatrixRow {
-    elements: MatrixElement[];
+    static_duration: { seconds: number; text: string } | null;
 }
 
 export interface ComputeRouteMatrixResult {
     origins: RouteLocation[];
     destinations: RouteLocation[];
-    rows: MatrixRow[];
+    elements: MatrixElement[];
 }
