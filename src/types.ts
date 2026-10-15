@@ -93,3 +93,34 @@ export interface FetchRoutesParams {
     region: string;
     client: Impit;
 }
+
+export interface ComputeRouteMatrixOptions {
+    origins: Array<string | RouteLocation>;
+    destinations: Array<string | RouteLocation>;
+    language?: string;
+    region?: string;
+    concurrency?: number;
+    proxy?: {
+        proxyUrl?: string | undefined;
+        ignoreTls?: boolean;
+    }
+}
+
+export interface MatrixElement {
+    origin_index: number;
+    destination_index: number;
+    status: "OK" | "ERROR";
+    distance: { meters: number; text: string } | null;
+    duration: { seconds: number; text: string } | null;
+    duration_in_traffic: { seconds: number; text: string } | null;
+}
+
+export interface MatrixRow {
+    elements: MatrixElement[];
+}
+
+export interface ComputeRouteMatrixResult {
+    origins: RouteLocation[];
+    destinations: RouteLocation[];
+    rows: MatrixRow[];
+}

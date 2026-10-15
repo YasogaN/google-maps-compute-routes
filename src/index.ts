@@ -4,9 +4,14 @@ import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, v
 import type { ComputeRoutesOptions, JsonArray, ParsedRoute, RouteLocation } from "./types.js";
 
 export { decodePolyline, encodePolyline } from "./polyline.js";
+export { computeRouteMatrix } from "./matrix.js";
 export type {
+  ComputeRouteMatrixOptions,
+  ComputeRouteMatrixResult,
   Coordinates,
   JsonArray,
+  MatrixElement,
+  MatrixRow,
   ParsedLeg,
   ParsedRoute,
   ParsedStep,

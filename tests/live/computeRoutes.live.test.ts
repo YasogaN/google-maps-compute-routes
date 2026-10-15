@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeRoutes } from "../../src/index.js";
+import { computeRouteMatrix, computeRoutes } from "../../src/index.js";
 import { encodePolyline } from "../../src/polyline.js";
 import { contractViolations } from "../helpers/contract.js";
 import type { JsonArray, ParsedRoute } from "../../src/types.js";
@@ -56,5 +56,14 @@ describe("computeRoutes (live)", () => {
     expect(routes.length).toBeGreaterThan(0);
     expect(routes[0]!.distance.meters).toBeGreaterThan(0);
     expect(routes[0]!.legs.length).toBeGreaterThan(1);
+  });
+
+  it("computes a route matrix", async () => {
+    const matrix = await computeRouteMatrix({ origins: [ORIGIN], destinations: [DESTINATION], region: "lk" });
+
+    expect(matrix.rows).toHaveLength(1);
+    expect(matrix.rows[0]!.elements).toHaveLength(1);
+    expect(matrix.rows[0]!.elements[0]!.status).toBe("OK");
+    expect(matrix.rows[0]!.elements[0]!.duration?.seconds).toBeGreaterThan(0);
   });
 });
