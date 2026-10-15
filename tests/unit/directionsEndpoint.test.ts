@@ -20,6 +20,15 @@ describe("getDirectionsUrl", () => {
     expect(pbOf(url)).toBe("!1m5!1sA!3m2!3d1.5!4d2.5!6e0!1m2!1sB!6e0");
   });
 
+  it("inserts intermediate waypoints in order", () => {
+    const url = getDirectionsUrl({
+      origin: { query: "A" },
+      destination: { query: "D" },
+      waypoints: [{ query: "B" }, { query: "C" }],
+    });
+    expect(pbOf(url)).toBe("!1m2!1sA!6e0!1m2!1sB!6e0!1m2!1sC!6e0!1m2!1sD!6e0");
+  });
+
   it("includes a feature id when provided", () => {
     const url = getDirectionsUrl({
       origin: { query: "A", place_id: "0x1:0x2" },

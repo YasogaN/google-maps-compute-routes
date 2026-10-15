@@ -3,6 +3,7 @@ import type { RouteLocation } from "./types.js";
 export interface DirectionsUrl {
     origin: RouteLocation;
     destination: RouteLocation;
+    waypoints?: RouteLocation[];
     language?: string;
     region?: string;
 }
@@ -41,15 +42,20 @@ function buildLocation(location: RouteLocation): string {
 /**
  * Build the `preview/directions` request URL for an origin/destination pair.
  *
+ * Intermediate `waypoints` are encoded as additional repeated waypoint messages
+ * between the origin and destination, which splits the route into one leg per
+ * stopover.
+ *
  * @param options             - The request components.
  * @param options.origin      - Origin waypoint.
  * @param options.destination - Destination waypoint.
+ * @param options.waypoints   - Optional intermediate stopover waypoints.
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @returns The fully encoded directions endpoint URL.
  */
-export default function getDirectionsUrl({ origin, destination, language = "en", region = "us" }: DirectionsUrl): string {
-    const pb = `!${buildLocation(origin)}!${buildLocation(destination)}`;
+export default function getDirectionsUrl({ origin, destination, waypoints = [], language = "en", region = "us" }: DirectionsUrl): string {
+    const pb = `!${[origin, ...waypoints, destination].map(buildLocation).join("!")}`;
     const params = new URLSearchParams({
         authuser: "0",
         hl: language,
