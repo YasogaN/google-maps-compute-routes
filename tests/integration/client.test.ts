@@ -20,6 +20,15 @@ describe("createClient", () => {
     expect(options).not.toHaveProperty("ignoreTlsErrors");
   });
 
+  it("impersonates the latest chrome fingerprint with a matching user agent", () => {
+    createClient({ proxy: { url: undefined } });
+
+    const options = ImpitMock.mock.calls[0]![0] as Record<string, unknown>;
+    expect(options.browser).toBe("chrome151");
+    const headers = options.headers as Record<string, string>;
+    expect(headers["User-Agent"]).toContain("Chrome/151.0.0.0");
+  });
+
   it("passes the proxy url and ignores TLS errors when requested", () => {
     createClient({ proxy: { url: "http://proxy:8080", tls: true } });
 
