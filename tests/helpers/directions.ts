@@ -12,6 +12,10 @@ export function makeStep(overrides: Record<number, unknown> = {}): unknown[] {
     "<step maneuver='DEPART' meters='100'>Head toward <roadlist><road lang='en'>Main St</road></roadlist></step>",
     [100, "100 m", 0],
     [60, "1 min"],
+    null,
+    null,
+    null,
+    [[[1000, 79.9, 6.9], [0, 0, 0], [1024, 768], 13.1]],
   ];
   apply(detail, overrides);
   return [detail];
@@ -44,7 +48,7 @@ export function makeRoute(overrides: Record<number, unknown> = {}): unknown[] {
     null,
     null,
     null,
-    null,
+    [null, null, null, [null, null, [null, null, 6.8, 79.8], [null, null, 6.9, 79.9]]],
     null,
     null,
     [[330, "6 min"], null, 1, [260, "4 min"], [280, 400, "5–7 min"], [310]],

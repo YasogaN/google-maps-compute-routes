@@ -1,5 +1,39 @@
 import { getPath, numberOrZero, stringOrEmpty } from "./sharedParser.js";
-import type { ParsedLeg, ParsedRoute, ParsedStep } from "./types.js";
+import type { Coordinates, ParsedLeg, ParsedRoute, ParsedStep } from "./types.js";
+
+/**
+ * Coerce a raw `[lat, lng]` or `[null, null, lat, lng]` node into coordinates.
+ *
+ * @param value The raw coordinate node.
+ * @returns The parsed coordinates, or `null` when the node is malformed.
+ */
+function parseCoordinates(value: unknown): Coordinates | null {
+    if (!Array.isArray(value)) return null;
+    if (typeof value[0] === "number" && typeof value[1] === "number") {
+        return { latitude: value[0], longitude: value[1] };
+    }
+    if (typeof value[2] === "number" && typeof value[3] === "number") {
+        return { latitude: value[2], longitude: value[3] };
+    }
+    return null;
+}
+
+/**
+ * Coerce a step viewport `[distance, longitude, latitude]` into coordinates.
+ *
+ * The step's viewport is centred on the point where the step begins, so it is
+ * used as an approximate start location for the step.
+ *
+ * @param value The raw viewport node.
+ * @returns The parsed coordinates, or `null` when the node is malformed.
+ */
+function parseViewportLocation(value: unknown): Coordinates | null {
+    if (!Array.isArray(value)) return null;
+    if (typeof value[1] === "number" && typeof value[2] === "number") {
+        return { latitude: value[2], longitude: value[1] };
+    }
+    return null;
+}
 
 /**
  * Build a `{ meters, text }` pair from a positional distance block.
@@ -39,6 +73,7 @@ function parseStep(step: unknown): ParsedStep | null {
         maneuver: maneuver?.[1] ?? "",
         distance: parseDistance(getPath(detail, [2])),
         duration: parseDuration(getPath(detail, [3])),
+        start_location: parseViewportLocation(getPath(detail, [7, 0, 0])),
     };
 }
 
@@ -69,7 +104,33 @@ function parseLeg(leg: unknown): ParsedLeg | null {
 }
 
 /**
- * Parse a single route, including its legs and traffic-aware durations.
+ * Collect every leg across the route's waypoint segments.
+ *
+ * A route with intermediate waypoints stores one segment per stopover, each
+ * carrying its own leg list, so the legs are flattened in waypoint order.
+ *
+ * @param route The raw route array.
+ * @returns The parsed legs.
+ */
+function parseLegs(route: unknown): ParsedLeg[] {
+    const segments = getPath(route, [1]);
+    if (!Array.isArray(segments)) return [];
+
+    const legs: ParsedLeg[] = [];
+    for (const segment of segments) {
+        const segmentLegs = getPath(segment, [1]);
+        if (!Array.isArray(segmentLegs)) continue;
+        for (const leg of segmentLegs) {
+            const parsed = parseLeg(leg);
+            if (parsed) legs.push(parsed);
+        }
+    }
+    return legs;
+}
+
+/**
+ * Parse a single route, including its legs, traffic-aware durations and the
+ * approximate overview path.
  *
  * @param route The raw route array.
  * @returns The parsed route, or `null` when the entry is malformed.
@@ -81,10 +142,16 @@ function parseRoute(route: unknown): ParsedRoute | null {
     const traffic = getPath(summary, [10]);
     const range = Array.isArray(traffic) ? getPath(traffic, [4]) : undefined;
 
-    const legsRaw = getPath(route, [1, 0, 1]);
-    const legs = Array.isArray(legsRaw)
-        ? legsRaw.map(parseLeg).filter((l): l is ParsedLeg => l !== null)
-        : [];
+    const legs = parseLegs(route);
+
+    const overviewPath: Coordinates[] = [];
+    for (const leg of legs) {
+        for (const step of leg.steps) {
+            if (step.start_location) overviewPath.push(step.start_location);
+        }
+    }
+    const destination = parseCoordinates(getPath(route, [0, 7, 3, 2]));
+    if (destination) overviewPath.push(destination);
 
     return {
         route_id: stringOrEmpty(getPath(route, [5])),
@@ -102,6 +169,7 @@ function parseRoute(route: unknown): ParsedRoute | null {
             }
             : null,
         arrival: stringOrEmpty(getPath(route, [22, 8, 0, 0])) || null,
+        overview_path: overviewPath,
         legs,
     };
 }
