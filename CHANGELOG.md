@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-15
+
+### Added
+
+- `requests_per_second` option on `computeRoutes()` and `computeRouteMatrix()`: requests are paced at one per second by default (adjustable) so a burst such as the matrix fan-out does not trip the endpoint's anti-bot rate limiting
+- Session cookie warm-up: each call fetches `https://maps.google.com/` once to collect Google's `NID`, `AEC`, `SEARCH_SAMESITE` and `__Secure-STRP` cookies into the client's cookie jar before any directions request
+- Per-request headers: the warm-up is sent as a document navigation and the directions request as a same-origin fetch, each with the matching `Sec-Fetch-*` headers, and the directions request carries a route-specific `Referer`
+
+### Changed
+
+- Updated `impit` from 0.8.2 to 0.14.6 and `tough-cookie` from `^6.0.1` to `^6.0.2`
+- The HTTP client now impersonates impit's `chrome151` fingerprint with its matching Chrome 151 user agent (the bare `chrome` alias resolved to Chrome 124)
+- Unwrapped the documentation, so each paragraph and list item is a single line instead of being hard-wrapped at around 80 columns
+
+### Fixed
+
+- The client sent a hardcoded Chrome 147 user agent while impersonating an older TLS/HTTP2 profile; the user agent and the impersonated fingerprint now agree
+
 ## [1.0.0] - 2026-10-15
 
 ### Added
