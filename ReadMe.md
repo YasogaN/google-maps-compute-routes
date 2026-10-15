@@ -56,6 +56,21 @@ const routes = await computeRoutes({
 });
 ```
 
+Add intermediate stops with `waypoints`. Each stopover splits the route into
+its own leg:
+
+```ts
+const routes = await computeRoutes({
+  origin: "Probike, Battaramulla",
+  destination: "The Fab - Battaramulla",
+  waypoints: ["Sasha Food Court Koswatta Battaramulla", "People's Bank Battaramulla"],
+  region: "lk",
+  clean: true,
+});
+// routes[0].legs.length === 3 (origin -> stop A -> stop B -> destination)
+// routes[0].overview_path is an approximate path: one point per step plus the destination
+```
+
 ### Arguments
 
 All arguments are passed as a single object:
@@ -65,6 +80,8 @@ All arguments are passed as a single object:
 `origin` - `string | RouteLocation`: Starting point, either a free-text query or a structured location.
 
 `destination` - `string | RouteLocation`: Ending point, either a free-text query or a structured location.
+
+`waypoints` - `Array<string | RouteLocation>`: Optional intermediate stopover points. Each one splits the route into an additional leg. Defaults to `[]`.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 
@@ -87,6 +104,15 @@ A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latit
 ## Documentation
 
 All documentation related to endpoints and URL formats used in this project can be found in the [docs](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/) folder. This module uses the `preview/directions` endpoint to compute routes. Note that everything included here was based on my research, so errors could be present. A pull request is always welcome (see [contributing](#contributing)).
+
+---
+
+## Related Projects
+
+Part of the same family of Google Maps scrapers:
+
+- [**google-maps-review-scraper**](https://github.com/YasogaN/google-maps-review-scraper) - scrape reviews for a Google Maps place.
+- [**google-maps-compute-routes**](https://github.com/YasogaN/google-maps-compute-routes) - compute routes, ETAs and turn-by-turn directions (this project).
 
 ---
 

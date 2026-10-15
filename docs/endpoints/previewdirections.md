@@ -49,6 +49,31 @@ For a request built by this library (`!<origin>!<destination>`):
 A full request adds many optional feature flags from the web client, but none
 of them are required to obtain routes.
 
+## Waypoints
+
+Intermediate stopovers are encoded as additional `1m<N>` waypoint messages
+between the origin and destination:
+
+```
+!<origin>!<waypoint 1>!<waypoint 2>!<destination>
+```
+
+Every stopover splits the route into a separate segment, and the response
+stores one segment per stopover (see [Response Structure](#response-structure)).
+A request with no waypoints yields a single segment.
+
+## Geometry
+
+Unlike the public Routes API, this endpoint does **not** return an encoded
+polyline. The route line is delivered to the browser as vector tiles
+(`/maps/vt/stream/...2sdirections...`), which use an opaque compressed format.
+
+What the JSON does expose are the position of each step. Each step's viewport
+(`step[0][7][0][0]`) is a `[distance, longitude, latitude]` triple centred on
+the point where the step begins, which is chained into an approximate
+`overview_path` (each step's start plus the destination). This is a simplified
+skeleton, not a dense polyline.
+
 ## Response Structure
 
 The response is JSON with the XSSI guard prefix `)]}'` prepended, and is a

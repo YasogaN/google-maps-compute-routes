@@ -27,6 +27,9 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
     "text": "Human readable ETA range"
 } || null,
 "arrival": "Predicted arrival time text" || null,
+"overview_path": [
+    { "latitude": "Latitude", "longitude": "Longitude" }
+],
 "legs": [
     {
         "distance": { "meters": "Distance in meters", "text": "Human readable distance" },
@@ -37,7 +40,8 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
                 "instructions": "Raw HTML instructions, e.g. <step maneuver='DEPART' ...>",
                 "maneuver": "Maneuver name, e.g. DEPART, TURN, ARRIVE",
                 "distance": { "meters": "Distance in meters", "text": "Human readable distance" },
-                "duration": { "seconds": "Duration in seconds", "text": "Human readable duration" }
+                "duration": { "seconds": "Duration in seconds", "text": "Human readable duration" },
+                "start_location": { "latitude": "Latitude", "longitude": "Longitude" } || null
             }
         ]
     }
@@ -47,6 +51,12 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
 The above format is self-explanatory. `duration_in_traffic` and `duration_range`
 are populated for driving-style routes; transit-style alternatives may omit
 them and return `null`.
+
+`overview_path` is an approximate path derived from the step boundaries: one
+coordinate per step (its `start_location`) followed by the destination. It is a
+simplified skeleton, not a dense encoded polyline, because the endpoint does not
+return one. When `waypoints` are supplied each stopover adds an extra leg and
+its own steps to the path.
 
 # Reporting Issues
 
