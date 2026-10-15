@@ -8,6 +8,7 @@ vi.mock("../../src/client.js", () => ({
 }));
 
 import { computeRoutes } from "../../src/index.js";
+import { encodePolyline } from "../../src/polyline.js";
 import type { ParsedRoute } from "../../src/types.js";
 
 beforeEach(() => {
@@ -66,6 +67,22 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(calledUrl).toContain("1sB");
     expect(calledUrl).toContain("1sC");
     expect(calledUrl).toContain("1sD");
+  });
+
+  it("builds a route from an encoded polyline", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    const polyline = encodePolyline([
+      { latitude: 6.91191, longitude: 79.93237 },
+      { latitude: 6.90777, longitude: 79.9304 },
+      { latitude: 6.90215, longitude: 79.9153 },
+    ]);
+    await computeRoutes({ polyline, clean: true });
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("6.91191,79.93237");
+    expect(calledUrl).toContain("6.90777,79.9304");
+    expect(calledUrl).toContain("6.90215,79.9153");
   });
 
   it("prefers explicit waypoints over the URL", async () => {

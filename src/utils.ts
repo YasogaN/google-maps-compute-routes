@@ -1,23 +1,29 @@
 import getDirectionsUrl from "./directionsEndpoint.js";
-import type { FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
+import { decodePolyline } from "./polyline.js";
+import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
 
 /**
  * Validate the scraper input, throwing on invalid values.
  *
- * When a `url` is supplied it must point at a `google.com` host; otherwise both
- * `origin` and `destination` are required. `waypoints`, when present, must be
- * an array, and `clean` must always be a boolean.
+ * When a `polyline` is supplied the path is taken from it and no
+ * origin/destination are required. Otherwise, when a `url` is supplied it must
+ * point at a `google.com` host, or both `origin` and `destination` must be
+ * present. `waypoints`, when present, must be an array, and `clean` must always
+ * be a boolean.
  *
  * @param options             - The parameters to validate.
  * @param options.url         - Optional Google Maps directions URL.
  * @param options.origin      - Optional origin (required without a URL).
  * @param options.destination - Optional destination (required without a URL).
  * @param options.waypoints   - Optional intermediate stopover waypoints.
+ * @param options.polyline    - Optional encoded polyline or coordinate path.
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, waypoints, clean }: Validate) {
-  if (url !== undefined) {
+export function validateParams({ url, origin, destination, waypoints, polyline, clean }: Validate) {
+  if (polyline !== undefined) {
+    // The path comes from the polyline, so no URL or waypoints are required.
+  } else if (url !== undefined) {
     let parsedUrl: URL;
     try {
       parsedUrl = new URL(url);
@@ -32,7 +38,7 @@ export function validateParams({ url, origin, destination, waypoints, clean }: V
       throw new Error(`Invalid host: ${host}`);
     }
   } else if (origin === undefined || destination === undefined) {
-    throw new Error("Either a directions URL or both origin and destination are required");
+    throw new Error("Either a directions URL, a polyline, or both origin and destination are required");
   }
 
   if (waypoints !== undefined && !Array.isArray(waypoints)) {
@@ -42,6 +48,21 @@ export function validateParams({ url, origin, destination, waypoints, clean }: V
   if (typeof clean !== "boolean") {
     throw new Error(`Invalid value for 'clean': ${clean}`);
   }
+}
+
+/**
+ * Resolve a polyline input into the list of coordinates defining the path.
+ *
+ * @param polyline An encoded polyline string or an array of coordinates.
+ * @returns The decoded coordinates.
+ * @throws {Error} If fewer than two points are provided.
+ */
+export function parsePolylineInput(polyline: string | Coordinates[]): Coordinates[] {
+  const coordinates = typeof polyline === "string" ? decodePolyline(polyline) : polyline;
+  if (!Array.isArray(coordinates) || coordinates.length < 2) {
+    throw new Error("A polyline must contain at least two points");
+  }
+  return coordinates;
 }
 
 /**

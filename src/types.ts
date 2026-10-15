@@ -66,6 +66,7 @@ export interface ComputeRoutesOptions {
     origin?: string | RouteLocation;
     destination?: string | RouteLocation;
     waypoints?: Array<string | RouteLocation>;
+    polyline?: string | Coordinates[];
     language?: string;
     region?: string;
     clean?: boolean;
@@ -80,6 +81,7 @@ export interface Validate {
     origin: string | RouteLocation | undefined;
     destination: string | RouteLocation | undefined;
     waypoints?: Array<string | RouteLocation>;
+    polyline?: string | Coordinates[] | undefined;
     clean: boolean;
 }
 

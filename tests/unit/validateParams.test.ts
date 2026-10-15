@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDirectionsUrl, toRouteLocation, validateParams } from "../../src/utils.js";
+import { parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "../../src/utils.js";
 
 describe("validateParams", () => {
   it("accepts a google.com directions URL without origin/destination", () => {
@@ -16,6 +16,12 @@ describe("validateParams", () => {
 
   it("accepts an origin and destination without a URL", () => {
     expect(() => validateParams({ url: undefined, origin: "A", destination: "B", clean: true })).not.toThrow();
+  });
+
+  it("accepts a polyline without origin or destination", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: undefined, destination: undefined, polyline: "abc", clean: false }),
+    ).not.toThrow();
   });
 
   it("rejects a non-google host", () => {
@@ -95,5 +101,23 @@ describe("toRouteLocation", () => {
 
   it("passes a structured location through", () => {
     expect(toRouteLocation({ query: "A", place_id: "0x1:0x2" })).toEqual({ query: "A", place_id: "0x1:0x2" });
+  });
+});
+
+describe("parsePolylineInput", () => {
+  it("decodes an encoded polyline", () => {
+    expect(parsePolylineInput("_p~iF~ps|U_ulLnnqC_mqNvxq`@")).toHaveLength(3);
+  });
+
+  it("accepts a coordinate array", () => {
+    const coordinates = [
+      { latitude: 1, longitude: 2 },
+      { latitude: 3, longitude: 4 },
+    ];
+    expect(parsePolylineInput(coordinates)).toBe(coordinates);
+  });
+
+  it("rejects fewer than two points", () => {
+    expect(() => parsePolylineInput([{ latitude: 1, longitude: 2 }])).toThrow(/at least two points/);
   });
 });

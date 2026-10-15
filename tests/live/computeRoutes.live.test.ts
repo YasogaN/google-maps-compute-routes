@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeRoutes } from "../../src/index.js";
+import { encodePolyline } from "../../src/polyline.js";
 import { contractViolations } from "../helpers/contract.js";
 import type { JsonArray, ParsedRoute } from "../../src/types.js";
 
@@ -41,5 +42,19 @@ describe("computeRoutes (live)", () => {
     expect(first.legs.length).toBeGreaterThan(1);
     expect(first.overview_path.length).toBeGreaterThan(0);
     expect(first.overview_path[0]!.latitude).toBeGreaterThan(0);
+  });
+
+  it("computes a route along a supplied polyline", async () => {
+    const polyline = encodePolyline([
+      { latitude: 6.91191, longitude: 79.93237 },
+      { latitude: 6.90777, longitude: 79.9304 },
+      { latitude: 6.90215, longitude: 79.9153 },
+    ]);
+
+    const routes = (await computeRoutes({ polyline, region: "lk", clean: true })) as ParsedRoute[];
+
+    expect(routes.length).toBeGreaterThan(0);
+    expect(routes[0]!.distance.meters).toBeGreaterThan(0);
+    expect(routes[0]!.legs.length).toBeGreaterThan(1);
   });
 });
