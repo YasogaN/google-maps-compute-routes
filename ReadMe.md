@@ -1,0 +1,164 @@
+![YasogaN](https://socialify.git.ci/YasogaN/google-maps-compute-routes/image?description=1&descriptionEditable=An%20NPM%20module%20to%20compute%20routes%20from%20Google%20Maps&font=Source%20Code%20Pro&name=1&owner=1&theme=Auto)
+
+<div align="center">
+
+![](https://img.shields.io/github/license/YasogaN/google-maps-compute-routes.svg?style=for-the-badge&color=blue)
+![](https://img.shields.io/github/forks/YasogaN/google-maps-compute-routes.svg?style=for-the-badge)
+![](https://img.shields.io/github/stars/YasogaN/google-maps-compute-routes.svg?style=for-the-badge)
+![](https://img.shields.io/github/watchers/YasogaN/google-maps-compute-routes.svg?style=for-the-badge)
+![](https://img.shields.io/github/issues/YasogaN/google-maps-compute-routes.svg?style=for-the-badge)
+![](https://img.shields.io/github/languages/code-size/YasogaN/google-maps-compute-routes?style=for-the-badge)
+
+## Frameworks/Technologies
+
+![](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+
+</div>
+
+---
+
+## Installation
+
+Install with npm
+
+```bash
+  npm install google-maps-compute-routes
+```
+
+Install with yarn
+
+```bash
+  yarn add google-maps-compute-routes
+```
+
+---
+
+## Usage/Examples
+
+```ts
+import { computeRoutes } from "google-maps-compute-routes";
+
+const routes = await computeRoutes({
+  origin: "Probike, Battaramulla",
+  destination: "The Fab - Battaramulla",
+  region: "lk",
+  clean: true,
+});
+```
+
+You can also pass a Google Maps directions URL instead of the waypoints:
+
+```ts
+const routes = await computeRoutes({
+  url: "https://www.google.com/maps/dir/Probike+Battaramulla/The+Fab+-+Battaramulla/",
+  clean: true,
+});
+```
+
+### Arguments
+
+All arguments are passed as a single object:
+
+`url` - `string`: A Google Maps directions URL as explained [here](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/urls/directions.md). If omitted, `origin` and `destination` are required.
+
+`origin` - `string | RouteLocation`: Starting point, either a free-text query or a structured location.
+
+`destination` - `string | RouteLocation`: Ending point, either a free-text query or a structured location.
+
+A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
+
+`language` - `string`: Response language (`hl`). Defaults to `"en"`.
+
+`region` - `string`: Region bias (`gl`). Defaults to `"us"`.
+
+`clean` - `boolean`: Whether to return a cleaned/parsed output (`ParsedRoute[]`) or raw JSON (`JsonArray`). Defaults to `false`.
+
+`proxy.proxyUrl` - `string`: Optional HTTP proxy URL.
+
+`proxy.ignoreTls` - `boolean`: Whether to ignore TLS errors on the proxy. Defaults to `false`.
+
+### Returns
+
+`routes` - `Promise<ParsedRoute[] | JsonArray>`: A promise that resolves to route objects in these [formats](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/outputs/output.md) depending on the value of `clean`.
+
+---
+
+## Documentation
+
+All documentation related to endpoints and URL formats used in this project can be found in the [docs](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/) folder. This module uses the `preview/directions` endpoint to compute routes. Note that everything included here was based on my research, so errors could be present. A pull request is always welcome (see [contributing](#contributing)).
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/YasogaN/google-maps-compute-routes/blob/main/LICENSE) file for details.
+
+### Summary of the MIT License
+
+The **MIT License** is a permissive open-source license that allows users significant freedom with minimal conditions.
+
+### Key Permissions:
+
+1. **Freedom to Use**: You can use the software for any purpose, including commercial use.
+2. **Freedom to Modify**: You are free to modify the software as needed.
+3. **Freedom to Distribute**: You can distribute copies of the software, whether in its original or modified form.
+4. **Freedom to Sell**: You can sublicense, distribute, and even sell copies of the software.
+
+### Key Conditions:
+
+- **Attribution**: You must include the original copyright notice and the MIT license text in any copies or substantial portions of the software.
+
+### No Warranty:
+
+- The software is provided "as is", without warranties or guarantees. The author is not liable for any damages arising from its use.
+
+For full details, refer to the license text.
+
+---
+
+## Contributing
+
+I welcome contributions from the community! Please see our [CONTRIBUTING.md](https://github.com/YasogaN/google-maps-compute-routes/blob/main/CONTRIBUTING.md) for details on how to contribute to this project.
+
+---
+
+## Code of Conduct
+
+Please note that this project is governed by a [Code of Conduct](https://github.com/YasogaN/google-maps-compute-routes/blob/main/CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code.
+
+---
+
+## Acknowledgements
+
+Special thanks to [@marin-m](https://github.com/marin-m) for his outstanding work on the [pbtk](https://github.com/marin-m/pbtk) repository. His contributions and insights on protocol buffers were invaluable in my research and development process.
+
+### Dependencies
+
+- [impit](https://github.com/apify/impit) by [@apify](https://github.com/apify)
+- [tough-cookie](https://github.com/salesforce/tough-cookie) by [@salesforce](https://github.com/salesforce)
+
+---
+
+## Legal Disclaimer
+
+This project is not affiliated with, endorsed by, or associated with Google LLC or any of its products and services. All product and company names are trademarks or registered trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them.
+
+### Purpose of the Project
+
+This project was created with the primary intent of serving as an educational tool and proof of concept. The objectives include:
+
+- **Educational Use**: To provide a hands-on learning experience in developing software, using APIs, and understanding the integration of various technologies.
+- **Proof of Concept**: To demonstrate the feasibility and potential of certain technical approaches and solutions.
+
+### Non-Commercial Nature
+
+This project is non-commercial and is not intended for any form of profit generation or business use. It is shared openly with the community to foster learning and collaboration.
+
+### Intellectual Property and Fair Use
+
+We acknowledge and respect the intellectual property rights of Google and other third parties. Any content used from external sources is credited appropriately, and no proprietary data or materials are misused.
+
+### Contact and Legal Concerns
+
+If you have any concerns or questions regarding the legality of this project, or any specific legal queries or issues, please seek professional legal advice.
