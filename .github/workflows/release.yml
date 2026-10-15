@@ -1,0 +1,45 @@
+name: Release & Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  publish-and-release:
+    name: Publish and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "26"
+          registry-url: "https://registry.npmjs.org"
+
+      # Build on the pinned Node that will also publish the artifact.
+      - name: Install dependencies & Build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm run build
+
+      # --- 1. PUBLISH TO NPM ---
+      - name: Publish to npm
+        run: pnpm publish --access public --no-git-checks --provenance
+
+      # --- 2. CREATE GITHUB RELEASE ---
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create ${{ github.ref_name }} --generate-notes
