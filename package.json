@@ -2,10 +2,28 @@
   "name": "google-maps-compute-routes",
   "version": "1.0.0",
   "description": "A routes scraper made for Google Maps",
+  "keywords": [
+    "google-maps",
+    "google-maps-api",
+    "google-maps-scraping",
+    "google-maps-routes",
+    "google-maps-directions",
+    "routes",
+    "directions",
+    "eta",
+    "route-matrix",
+    "distance-matrix",
+    "waypoints",
+    "polyline",
+    "typescript"
+  ],
   "homepage": "https://github.com/YasogaN/google-maps-compute-routes",
   "repository": {
     "type": "git",
     "url": "https://github.com/YasogaN/google-maps-compute-routes"
+  },
+  "bugs": {
+    "url": "https://github.com/YasogaN/google-maps-compute-routes/issues"
   },
   "license": "MIT",
   "author": "YasogaN",
