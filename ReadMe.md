@@ -139,6 +139,14 @@ const routes = await computeRoutes({
 See [the SKU mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md)
 for how travel mode and waypoint count relate to the Routes API billing tiers.
 
+### Session cookies
+
+Before a call issues any directions request it fetches `https://maps.google.com/`
+once to collect Google's session cookies (`NID`, `AEC`, `SEARCH_SAMESITE` and
+`__Secure-STRP`) into the client's cookie jar. This preflight is paced by
+`requests_per_second` like any other request, and a matrix warms up once for the
+whole run rather than once per pair.
+
 ### Arguments
 
 All arguments are passed as a single object:
