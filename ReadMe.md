@@ -56,8 +56,7 @@ const routes = await computeRoutes({
 });
 ```
 
-Add intermediate stops with `waypoints`. Each stopover splits the route into
-its own leg:
+Add intermediate stops with `waypoints`. Each stopover splits the route into its own leg:
 
 ```ts
 const routes = await computeRoutes({
@@ -73,9 +72,7 @@ const routes = await computeRoutes({
 
 ### Get the ETA for a polyline
 
-Pass a `polyline` (encoded string or an array of coordinates) to get the
-traffic-aware ETA and directions along that path. The first point becomes the
-origin, the last the destination, and the points in between become waypoints:
+Pass a `polyline` (encoded string or an array of coordinates) to get the traffic-aware ETA and directions along that path. The first point becomes the origin, the last the destination, and the points in between become waypoints:
 
 ```ts
 import { computeRoutes, encodePolyline } from "google-maps-compute-routes";
@@ -113,18 +110,11 @@ matrix.elements[0].duration;          // live ETA (includes traffic)
 matrix.elements[0].static_duration;   // ETA without traffic
 ```
 
-The result mirrors the Routes API `computeRouteMatrix` stream: a flat list of
-elements, one per origin × destination pair. The endpoint is point-to-point, so
-the matrix is built by issuing one request per pair with bounded concurrency.
-Requests are paced to one per second by default (`requests_per_second`), so the
-fan-out does not trip the endpoint's anti-bot rate limiting. Failed pairs return
-`status: "ERROR"` instead of rejecting the whole matrix, and the documented 625
-element limit is enforced.
+The result mirrors the Routes API `computeRouteMatrix` stream: a flat list of elements, one per origin × destination pair. The endpoint is point-to-point, so the matrix is built by issuing one request per pair with bounded concurrency. Requests are paced to one per second by default (`requests_per_second`), so the fan-out does not trip the endpoint's anti-bot rate limiting. Failed pairs return `status: "ERROR"` instead of rejecting the whole matrix, and the documented 625 element limit is enforced.
 
 ### Travel modes
 
-Both functions accept a `travel_mode` of `"driving"`, `"walking"`,
-`"bicycling"` or `"two_wheeler"`:
+Both functions accept a `travel_mode` of `"driving"`, `"walking"`, `"bicycling"` or `"two_wheeler"`:
 
 ```ts
 const routes = await computeRoutes({
@@ -136,16 +126,11 @@ const routes = await computeRoutes({
 });
 ```
 
-See [the SKU mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md)
-for how travel mode and waypoint count relate to the Routes API billing tiers.
+See [the SKU mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md) for how travel mode and waypoint count relate to the Routes API billing tiers.
 
 ### Session cookies
 
-Before a call issues any directions request it fetches `https://maps.google.com/`
-once to collect Google's session cookies (`NID`, `AEC`, `SEARCH_SAMESITE` and
-`__Secure-STRP`) into the client's cookie jar. This preflight is paced by
-`requests_per_second` like any other request, and a matrix warms up once for the
-whole run rather than once per pair.
+Before a call issues any directions request it fetches `https://maps.google.com/` once to collect Google's session cookies (`NID`, `AEC`, `SEARCH_SAMESITE` and `__Secure-STRP`) into the client's cookie jar. This preflight is paced by `requests_per_second` like any other request, and a matrix warms up once for the whole run rather than once per pair.
 
 ### Arguments
 

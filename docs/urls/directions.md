@@ -21,8 +21,7 @@ https://www.google.com/maps/dir/
 
     eg: `Probike+Battaramulla/The+Fab+-+Battaramulla`
 
-- Second Level (optional): `Latitude`, `Longitude` and `Zoom Level` separated by
-  commas (`,`), starting with the `@` character and ending with the letter `z`.
+- Second Level (optional): `Latitude`, `Longitude` and `Zoom Level` separated by commas (`,`), starting with the `@` character and ending with the letter `z`.
 
     eg: `@6.9117058,79.9329593,16z`
 
@@ -52,17 +51,14 @@ https://www.google.com/maps/dir/?api=1&origin=[Origin]&destination=[Destination]
 
 ## Accepted input
 
-This library accepts either form. It only reads the origin and destination, so
-the optional `@lat,lng,zoomz` and `data=` segments may be present or absent.
+This library accepts either form. It only reads the origin and destination, so the optional `@lat,lng,zoomz` and `data=` segments may be present or absent.
 
 ## Intermediate waypoints
 
-Google Maps routes through intermediate stops by inserting further waypoint
-segments between the origin and destination:
+Google Maps routes through intermediate stops by inserting further waypoint segments between the origin and destination:
 
 ```ruby
 https://www.google.com/maps/dir/[Origin]/[Waypoint]/[Destination]/
 ```
 
-Each stopover splits the result into one leg per segment. The library exposes
-these through the `waypoints` option (see the [endpoint docs](../endpoints/previewdirections.md#waypoints)).
+Each stopover splits the result into one leg per segment. The library exposes these through the `waypoints` option (see the [endpoint docs](../endpoints/previewdirections.md#waypoints)).

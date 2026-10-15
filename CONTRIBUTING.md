@@ -30,17 +30,10 @@ To submit a pull request (PR):
 
 ## Testing
 
-Tests are written with [Vitest](https://vitest.dev/) and are split into two
-tiers:
+Tests are written with [Vitest](https://vitest.dev/) and are split into two tiers:
 
-- **`tests/unit` + `tests/integration`** — deterministic tests that run on every
-  push and pull request. Integration tests exercise the full pipeline against a
-  fake HTTP client, plus response-shape contract checks.
-- **`tests/live`** — tests that hit the real Google Maps endpoint. They run on a
-  schedule on a self-hosted runner (see `.github/workflows/live.yml`) and also
-  detect changes to the undocumented directions response shape. The structural
-  assumptions the parser relies on are enforced by `contractViolations` in
-  `tests/helpers/contract.ts`.
+- **`tests/unit` + `tests/integration`** — deterministic tests that run on every push and pull request. Integration tests exercise the full pipeline against a fake HTTP client, plus response-shape contract checks.
+- **`tests/live`** — tests that hit the real Google Maps endpoint. They run on a schedule on a self-hosted runner (see `.github/workflows/live.yml`) and also detect changes to the undocumented directions response shape. The structural assumptions the parser relies on are enforced by `contractViolations` in `tests/helpers/contract.ts`.
 
 ```bash
 pnpm test               # unit + integration tests
@@ -50,9 +43,7 @@ pnpm test:live          # live tests (requires network)
 pnpm test:coverage      # unit + integration with 100% coverage enforcement
 ```
 
-The coverage thresholds are set to 100% for statements, branches, functions
-and lines, so every new branch of logic must be covered by a test. Shared
-fixtures and builders live in `tests/helpers`.
+The coverage thresholds are set to 100% for statements, branches, functions and lines, so every new branch of logic must be covered by a test. Shared fixtures and builders live in `tests/helpers`.
 
 ## Code Style
 
