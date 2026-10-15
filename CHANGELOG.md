@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `polyline` input for `computeRoutes()` — pass an encoded polyline or coordinates and get the traffic-aware ETA and directions along that path
 - `encodePolyline()` and `decodePolyline()` helpers implementing the Google encoded-polyline algorithm
 - `computeRouteMatrix()` for duration/distance ETAs between many origins and destinations, with bounded concurrency and per-pair error handling
+- `travel_mode` option (`driving`, `walking`, `bicycling`, `two_wheeler`) for both `computeRoutes()` and `computeRouteMatrix()`
+- Matrix output aligned with the Routes API `computeRouteMatrix` contract: a flat element list with `condition`, traffic-aware `duration` and `static_duration`, plus the documented 625 element limit
+- Enforced the documented 25 intermediate waypoint limit for `computeRoutes()`
+- A [document mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md) features to the Compute Routes / Compute Route Matrix Essentials, Pro and Enterprise tiers
 - Browser-like HTTP client with optional proxy support and a cookie jar
 - Vitest test suites: deterministic `tests/unit` and `tests/integration` suites plus network-dependent `tests/live` tests with shared fixtures and builders
 - Scheduled live contract detection that checks the undocumented response against the parser's structural assumptions

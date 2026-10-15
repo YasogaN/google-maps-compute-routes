@@ -107,13 +107,35 @@ const matrix = await computeRouteMatrix({
   region: "lk",
 });
 
-matrix.rows[0]?.elements[0]?.duration?.text;        // origin 0 -> destination 0
-matrix.rows[0]?.elements[0]?.duration_in_traffic;   // live ETA
+matrix.elements[0].status;            // "OK" | "ERROR"
+matrix.elements[0].condition;         // "ROUTE_EXISTS" | "ROUTE_NOT_FOUND"
+matrix.elements[0].duration;          // live ETA (includes traffic)
+matrix.elements[0].static_duration;   // ETA without traffic
 ```
 
-The endpoint is point-to-point, so the matrix is built by issuing one request
-per pair with bounded concurrency. Failed pairs are returned as elements with
-`status: "ERROR"` and `null` metrics instead of rejecting the whole matrix.
+The result mirrors the Routes API `computeRouteMatrix` stream: a flat list of
+elements, one per origin × destination pair. The endpoint is point-to-point, so
+the matrix is built by issuing one request per pair with bounded concurrency.
+Failed pairs return `status: "ERROR"` instead of rejecting the whole matrix, and
+the documented 625 element limit is enforced.
+
+### Travel modes
+
+Both functions accept a `travel_mode` of `"driving"`, `"walking"`,
+`"bicycling"` or `"two_wheeler"`:
+
+```ts
+const routes = await computeRoutes({
+  origin: "Probike, Battaramulla",
+  destination: "The Fab - Battaramulla",
+  travel_mode: "two_wheeler",
+  region: "lk",
+  clean: true,
+});
+```
+
+See [the SKU mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md)
+for how travel mode and waypoint count relate to the Routes API billing tiers.
 
 ### Arguments
 
@@ -128,6 +150,8 @@ All arguments are passed as a single object:
 `waypoints` - `Array<string | RouteLocation>`: Optional intermediate stopover points. Each one splits the route into an additional leg. Defaults to `[]`.
 
 `polyline` - `string | Coordinates[]`: Optional encoded polyline or coordinate path. When given it takes precedence over `url`, `origin`, `destination` and `waypoints`, and the traffic-aware ETA for that path is returned.
+
+`travel_mode` - `"driving" | "walking" | "bicycling" | "two_wheeler"`: Optional travel mode. When omitted, the endpoint's default set of routes is returned.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 

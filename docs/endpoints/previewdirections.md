@@ -62,6 +62,28 @@ Every stopover splits the route into a separate segment, and the response
 stores one segment per stopover (see [Response Structure](#response-structure)).
 A request with no waypoints yields a single segment.
 
+## Travel mode
+
+When a travel mode is requested, an options message is appended:
+
+```
+!6m7!20m6!1e<mode>!2e3!5e2!6b1!8b1!14b1
+```
+
+The `<mode>` value is the internal travel-mode enum, which matches the mode code
+the endpoint returns on each route:
+
+| Value | Mode |
+| ----- | ---- |
+| 0 | driving |
+| 2 | walking |
+| 3 | bicycling |
+| 9 | two-wheeler |
+
+Without this message the endpoint returns its default set of driving routes
+(sometimes with an alternative mode), so set it explicitly for predictable
+results. Transit (1) and taxi (4) are not available in all regions.
+
 ## Geometry
 
 Unlike the public Routes API, this endpoint does **not** return an encoded
