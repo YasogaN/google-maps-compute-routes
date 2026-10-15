@@ -56,6 +56,18 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(calledUrl).toContain("1sFactory");
   });
 
+  it("passes intermediate waypoints through to the request", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))));
+
+    await computeRoutes({ origin: "A", destination: "D", waypoints: ["B", "C"] });
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("1sA");
+    expect(calledUrl).toContain("1sB");
+    expect(calledUrl).toContain("1sC");
+    expect(calledUrl).toContain("1sD");
+  });
+
   it("prefers explicit waypoints over the URL", async () => {
     mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))));
 

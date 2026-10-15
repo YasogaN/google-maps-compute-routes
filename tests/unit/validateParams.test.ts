@@ -47,6 +47,18 @@ describe("validateParams", () => {
       validateParams({ url: undefined, origin: "A", destination: "B", clean: "yes" as unknown as boolean }),
     ).toThrow(/Invalid value for 'clean'/);
   });
+
+  it("rejects non-array waypoints", () => {
+    expect(() =>
+      validateParams({
+        url: undefined,
+        origin: "A",
+        destination: "B",
+        waypoints: "B" as unknown as Array<string>,
+        clean: false,
+      }),
+    ).toThrow(/Invalid waypoints/);
+  });
 });
 
 describe("parseDirectionsUrl", () => {

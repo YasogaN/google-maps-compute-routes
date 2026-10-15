@@ -5,16 +5,18 @@ import type { FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./ty
  * Validate the scraper input, throwing on invalid values.
  *
  * When a `url` is supplied it must point at a `google.com` host; otherwise both
- * `origin` and `destination` are required. `clean` must always be a boolean.
+ * `origin` and `destination` are required. `waypoints`, when present, must be
+ * an array, and `clean` must always be a boolean.
  *
  * @param options             - The parameters to validate.
  * @param options.url         - Optional Google Maps directions URL.
  * @param options.origin      - Optional origin (required without a URL).
  * @param options.destination - Optional destination (required without a URL).
+ * @param options.waypoints   - Optional intermediate stopover waypoints.
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, clean }: Validate) {
+export function validateParams({ url, origin, destination, waypoints, clean }: Validate) {
   if (url !== undefined) {
     let parsedUrl: URL;
     try {
@@ -31,6 +33,10 @@ export function validateParams({ url, origin, destination, clean }: Validate) {
     }
   } else if (origin === undefined || destination === undefined) {
     throw new Error("Either a directions URL or both origin and destination are required");
+  }
+
+  if (waypoints !== undefined && !Array.isArray(waypoints)) {
+    throw new Error(`Invalid waypoints: ${String(waypoints)}`);
   }
 
   if (typeof clean !== "boolean") {
@@ -82,14 +88,15 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @param options             - The fetch parameters.
  * @param options.origin      - Origin waypoint.
  * @param options.destination - Destination waypoint.
+ * @param options.waypoints   - Intermediate stopover waypoints.
  * @param options.language    - Response language (`hl`).
  * @param options.region      - Region bias (`gl`).
  * @param options.client      - The HTTP client to use.
  * @returns The raw JSON array response.
  * @throws {Error} On fetch failure or invalid response format.
  */
-export async function fetchRoutes({ origin, destination, language, region, client }: FetchRoutesParams): Promise<JsonArray> {
-  const apiUrl = getDirectionsUrl({ origin, destination, language, region });
+export async function fetchRoutes({ origin, destination, waypoints, language, region, client }: FetchRoutesParams): Promise<JsonArray> {
+  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, language, region });
   const response = await client.fetch(apiUrl);
 
   if (!response.ok) {

@@ -13,6 +13,7 @@ import type { ComputeRoutesOptions, JsonArray, ParsedRoute } from "./types.js";
  * @param options.url         - Full Google Maps directions URL.
  * @param options.origin      - Origin query or location (used without a URL).
  * @param options.destination - Destination query or location (used without a URL).
+ * @param options.waypoints   - Intermediate stopover waypoints.
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @param options.clean       - When `true`, return parsed `ParsedRoute` objects.
@@ -27,6 +28,7 @@ export async function computeRoutes(
     url,
     origin,
     destination,
+    waypoints = [],
     language = "en",
     region = "us",
     clean = false,
@@ -37,7 +39,7 @@ export async function computeRoutes(
   }: ComputeRoutesOptions
 ): Promise<ParsedRoute[] | JsonArray> {
   try {
-    validateParams({ url, origin, destination, clean });
+    validateParams({ url, origin, destination, waypoints, clean });
 
     let originValue = origin;
     let destinationValue = destination;
@@ -49,12 +51,14 @@ export async function computeRoutes(
 
     const originLocation = toRouteLocation(originValue as string);
     const destinationLocation = toRouteLocation(destinationValue as string);
+    const waypointLocations = waypoints.map(toRouteLocation);
 
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
 
     const data = await fetchRoutes({
       origin: originLocation,
       destination: destinationLocation,
+      waypoints: waypointLocations,
       language,
       region,
       client,

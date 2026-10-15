@@ -65,6 +65,7 @@ export interface ComputeRoutesOptions {
     url?: string;
     origin?: string | RouteLocation;
     destination?: string | RouteLocation;
+    waypoints?: Array<string | RouteLocation>;
     language?: string;
     region?: string;
     clean?: boolean;
@@ -78,12 +79,14 @@ export interface Validate {
     url: string | undefined;
     origin: string | RouteLocation | undefined;
     destination: string | RouteLocation | undefined;
+    waypoints?: Array<string | RouteLocation>;
     clean: boolean;
 }
 
 export interface FetchRoutesParams {
     origin: RouteLocation;
     destination: RouteLocation;
+    waypoints: RouteLocation[];
     language: string;
     region: string;
     client: Impit;

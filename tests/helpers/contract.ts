@@ -40,18 +40,24 @@ export function contractViolations(data: unknown): string[] {
 
     // Some routes (e.g. transit) expose a different leg shape; the parser treats
     // a non-array steps node as an empty step list, so it is not a violation.
-    const legs = getPath(route, [1, 0, 1]);
-    if (!Array.isArray(legs)) return;
+    // A route with waypoints stores one segment per stopover, each with its own
+    // leg list, so every segment is checked.
+    const segments = getPath(route, [1]);
+    if (!Array.isArray(segments)) return;
 
-    for (const leg of legs) {
-      const steps = getPath(leg, [1]);
-      if (!Array.isArray(steps)) continue;
-      for (const step of steps) {
-        const html = getPath(step, [0, 1]);
-        if (typeof html !== "string" || !html.startsWith("<step")) {
-          problems.push(`route ${index} step instructions are malformed`);
-        } else {
-          parseableSteps += 1;
+    for (const segment of segments) {
+      const legs = getPath(segment, [1]);
+      if (!Array.isArray(legs)) continue;
+      for (const leg of legs) {
+        const steps = getPath(leg, [1]);
+        if (!Array.isArray(steps)) continue;
+        for (const step of steps) {
+          const html = getPath(step, [0, 1]);
+          if (typeof html !== "string" || !html.startsWith("<step")) {
+            problems.push(`route ${index} step instructions are malformed`);
+          } else {
+            parseableSteps += 1;
+          }
         }
       }
     }

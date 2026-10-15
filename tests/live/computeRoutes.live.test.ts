@@ -27,4 +27,19 @@ describe("computeRoutes (live)", () => {
     const data = (await computeRoutes({ origin: ORIGIN, destination: DESTINATION, region: "lk" })) as JsonArray;
     expect(contractViolations(data)).toEqual([]);
   });
+
+  it("splits a waypoint route into one leg per stopover", async () => {
+    const routes = (await computeRoutes({
+      origin: ORIGIN,
+      destination: DESTINATION,
+      waypoints: ["Sasha Food Court Koswatta Battaramulla"],
+      region: "lk",
+      clean: true,
+    })) as ParsedRoute[];
+
+    const first = routes[0]!;
+    expect(first.legs.length).toBeGreaterThan(1);
+    expect(first.overview_path.length).toBeGreaterThan(0);
+    expect(first.overview_path[0]!.latitude).toBeGreaterThan(0);
+  });
 });

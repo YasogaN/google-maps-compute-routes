@@ -5,6 +5,7 @@ import { asClient, clientOf, textResponse } from "../helpers/directions.js";
 const base = {
   origin: { query: "A" },
   destination: { query: "B" },
+  waypoints: [],
   language: "en",
   region: "us",
 };
