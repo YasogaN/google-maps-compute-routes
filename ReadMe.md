@@ -179,10 +179,12 @@ All documentation related to endpoints and URL formats used in this project can 
 
 ## Related Projects
 
-Part of the same family of Google Maps scrapers:
+Part of the same family of Google Maps tools:
 
-- [**google-maps-review-scraper**](https://github.com/YasogaN/google-maps-review-scraper) - scrape reviews for a Google Maps place.
+- [**google-maps-review-scraper**](https://github.com/YasogaN/google-maps-review-scraper) - fetch reviews for a Google Maps place.
+- [**google-maps-places**](https://github.com/YasogaN/google-maps-places) - fetch place details from Google Maps.
 - [**google-maps-compute-routes**](https://github.com/YasogaN/google-maps-compute-routes) - compute routes, ETAs and turn-by-turn directions (this project).
+- [**protobuf-doc**](https://github.com/YasogaN/protobuf-doc) - a CLI that decodes and documents Google Maps protobuf query strings, used to research the `pb` payloads this module sends.
 
 ---
 
@@ -228,6 +230,8 @@ Please note that this project is governed by a [Code of Conduct](https://github.
 ## Acknowledgements
 
 Special thanks to [@marin-m](https://github.com/marin-m) for his outstanding work on the [pbtk](https://github.com/marin-m/pbtk) repository. His contributions and insights on protocol buffers were invaluable in my research and development process.
+
+The `pb` payloads used by this module were decoded and documented with [protobuf-doc](https://github.com/YasogaN/protobuf-doc).
 
 ### Dependencies
 

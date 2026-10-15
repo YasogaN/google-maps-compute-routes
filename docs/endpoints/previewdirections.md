@@ -32,6 +32,8 @@ each field is `<field number><type><value>`. The type letters used here are:
 | `b`  | boolean |
 | `e`  | enum |
 
+These payloads can be decoded and inspected with [protobuf-doc](https://github.com/YasogaN/protobuf-doc) (`npx protobuf-doc "<pb string>" md`).
+
 A message's `m` count covers every token it (recursively) contains, so a child
 message contributes `1 + its own token count`.
 
