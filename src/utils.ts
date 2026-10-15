@@ -3,6 +3,11 @@ import { decodePolyline } from "./polyline.js";
 import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
 
 /**
+ * Maximum number of intermediate waypoints the Routes API allows per request.
+ */
+export const MAX_INTERMEDIATE_WAYPOINTS = 25;
+
+/**
  * Validate the scraper input, throwing on invalid values.
  *
  * When a `polyline` is supplied the path is taken from it and no
@@ -43,6 +48,10 @@ export function validateParams({ url, origin, destination, waypoints, polyline, 
 
   if (waypoints !== undefined && !Array.isArray(waypoints)) {
     throw new Error(`Invalid waypoints: ${String(waypoints)}`);
+  }
+
+  if (waypoints !== undefined && waypoints.length > MAX_INTERMEDIATE_WAYPOINTS) {
+    throw new Error(`Too many waypoints: ${waypoints.length} exceeds the limit of ${MAX_INTERMEDIATE_WAYPOINTS}`);
   }
 
   if (travel_mode !== undefined && !(travel_mode in TRAVEL_MODE_VALUES)) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "../../src/utils.js";
+import { MAX_INTERMEDIATE_WAYPOINTS, parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "../../src/utils.js";
 
 describe("validateParams", () => {
   it("accepts a google.com directions URL without origin/destination", () => {
@@ -76,6 +76,18 @@ describe("validateParams", () => {
         clean: false,
       }),
     ).toThrow(/Invalid travel mode/);
+  });
+
+  it("rejects more waypoints than the documented limit", () => {
+    expect(() =>
+      validateParams({
+        url: undefined,
+        origin: "A",
+        destination: "B",
+        waypoints: Array.from({ length: MAX_INTERMEDIATE_WAYPOINTS + 1 }, (_, index) => `W${index}`),
+        clean: false,
+      }),
+    ).toThrow(/Too many waypoints/);
   });
 });
 
