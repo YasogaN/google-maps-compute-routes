@@ -71,6 +71,50 @@ const routes = await computeRoutes({
 // routes[0].overview_path is an approximate path: one point per step plus the destination
 ```
 
+### Get the ETA for a polyline
+
+Pass a `polyline` (encoded string or an array of coordinates) to get the
+traffic-aware ETA and directions along that path. The first point becomes the
+origin, the last the destination, and the points in between become waypoints:
+
+```ts
+import { computeRoutes, encodePolyline } from "google-maps-compute-routes";
+
+const polyline = encodePolyline([
+  { latitude: 6.91191, longitude: 79.93237 },
+  { latitude: 6.90777, longitude: 79.9304 },
+  { latitude: 6.90215, longitude: 79.9153 },
+]);
+
+const routes = await computeRoutes({ polyline, region: "lk", clean: true });
+// routes[0].duration_in_traffic -> live ETA for the path
+```
+
+> The endpoint has no native "route along this polyline" mode, so the points are
+> sent as stopovers and Google snaps them to the road network. Feed a reasonably
+> dense (but simplified) path for accurate results.
+
+### Compute a route matrix
+
+Compute ETAs between many origins and destinations:
+
+```ts
+import { computeRouteMatrix } from "google-maps-compute-routes";
+
+const matrix = await computeRouteMatrix({
+  origins: ["Probike, Battaramulla", "Colombo Fort"],
+  destinations: ["The Fab - Battaramulla", "Bandaranaike International Airport"],
+  region: "lk",
+});
+
+matrix.rows[0]?.elements[0]?.duration?.text;        // origin 0 -> destination 0
+matrix.rows[0]?.elements[0]?.duration_in_traffic;   // live ETA
+```
+
+The endpoint is point-to-point, so the matrix is built by issuing one request
+per pair with bounded concurrency. Failed pairs are returned as elements with
+`status: "ERROR"` and `null` metrics instead of rejecting the whole matrix.
+
 ### Arguments
 
 All arguments are passed as a single object:
@@ -82,6 +126,8 @@ All arguments are passed as a single object:
 `destination` - `string | RouteLocation`: Ending point, either a free-text query or a structured location.
 
 `waypoints` - `Array<string | RouteLocation>`: Optional intermediate stopover points. Each one splits the route into an additional leg. Defaults to `[]`.
+
+`polyline` - `string | Coordinates[]`: Optional encoded polyline or coordinate path. When given it takes precedence over `url`, `origin`, `destination` and `waypoints`, and the traffic-aware ETA for that path is returned.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 

@@ -9,3 +9,7 @@ If `clean = true` then please refer to the [clean](https://github.com/YasogaN/go
 ## Raw Output
 
 If `clean = false` or the clean option is not set, then please refer to the [raw](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/outputs/raw.md) output section.
+
+## Matrix Output
+
+`computeRouteMatrix()` returns a different shape; please refer to the [matrix](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/outputs/matrix.md) output section.
