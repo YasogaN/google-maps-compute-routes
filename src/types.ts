@@ -33,16 +33,12 @@ export interface ParsedStep {
     maneuver: string;
     distance: { meters: number; text: string };
     duration: { seconds: number; text: string };
-    start_location: Coordinates | null;
-    end_location: Coordinates | null;
 }
 
 export interface ParsedLeg {
     distance: { meters: number; text: string };
     duration: { seconds: number; text: string };
     duration_in_traffic: { seconds: number; text: string } | null;
-    start_location: Coordinates | null;
-    end_location: Coordinates | null;
     steps: ParsedStep[];
 }
 
@@ -53,6 +49,7 @@ export interface ParsedRoute {
     duration: { seconds: number; text: string };
     duration_in_traffic: { seconds: number; text: string } | null;
     duration_range: { min_seconds: number; max_seconds: number; text: string } | null;
+    arrival: string | null;
     legs: ParsedLeg[];
 }
 
