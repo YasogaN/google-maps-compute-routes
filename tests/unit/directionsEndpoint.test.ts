@@ -50,6 +50,16 @@ describe("getDirectionsUrl", () => {
     expect(pbOf(url)).toBe("!1m2!1sA B!6e0!1m2!1sB!6e0");
   });
 
+  it("appends the travel mode options block when requested", () => {
+    const url = getDirectionsUrl({ origin: { query: "A" }, destination: { query: "B" }, travelMode: "two_wheeler" });
+    expect(pbOf(url)).toBe("!1m2!1sA!6e0!1m2!1sB!6e0!6m7!20m6!1e9!2e3!5e2!6b1!8b1!14b1");
+  });
+
+  it("omits the travel mode block when not requested", () => {
+    const url = getDirectionsUrl({ origin: { query: "A" }, destination: { query: "B" } });
+    expect(pbOf(url)).not.toContain("20m6");
+  });
+
   it("defaults language and region", () => {
     const url = new URL(getDirectionsUrl({ origin: { query: "A" }, destination: { query: "B" } }));
     expect(url.searchParams.get("hl")).toBe("en");

@@ -1,4 +1,4 @@
-import getDirectionsUrl from "./directionsEndpoint.js";
+import getDirectionsUrl, { TRAVEL_MODE_VALUES } from "./directionsEndpoint.js";
 import { decodePolyline } from "./polyline.js";
 import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
 
@@ -20,7 +20,7 @@ import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, waypoints, polyline, clean }: Validate) {
+export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, clean }: Validate) {
   if (polyline !== undefined) {
     // The path comes from the polyline, so no URL or waypoints are required.
   } else if (url !== undefined) {
@@ -43,6 +43,10 @@ export function validateParams({ url, origin, destination, waypoints, polyline, 
 
   if (waypoints !== undefined && !Array.isArray(waypoints)) {
     throw new Error(`Invalid waypoints: ${String(waypoints)}`);
+  }
+
+  if (travel_mode !== undefined && !(travel_mode in TRAVEL_MODE_VALUES)) {
+    throw new Error(`Invalid travel mode: ${travel_mode}`);
   }
 
   if (typeof clean !== "boolean") {
@@ -110,14 +114,15 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @param options.origin      - Origin waypoint.
  * @param options.destination - Destination waypoint.
  * @param options.waypoints   - Intermediate stopover waypoints.
+ * @param options.travelMode  - Optional travel mode.
  * @param options.language    - Response language (`hl`).
  * @param options.region      - Region bias (`gl`).
  * @param options.client      - The HTTP client to use.
  * @returns The raw JSON array response.
  * @throws {Error} On fetch failure or invalid response format.
  */
-export async function fetchRoutes({ origin, destination, waypoints, language, region, client }: FetchRoutesParams): Promise<JsonArray> {
-  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, language, region });
+export async function fetchRoutes({ origin, destination, waypoints, travelMode, language, region, client }: FetchRoutesParams): Promise<JsonArray> {
+  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, language, region });
   const response = await client.fetch(apiUrl);
 
   if (!response.ok) {

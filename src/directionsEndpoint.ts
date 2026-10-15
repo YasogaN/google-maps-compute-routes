@@ -1,12 +1,26 @@
-import type { RouteLocation } from "./types.js";
+import type { RouteLocation, TravelMode } from "./types.js";
 
 export interface DirectionsUrl {
     origin: RouteLocation;
     destination: RouteLocation;
     waypoints?: RouteLocation[];
+    travelMode?: TravelMode | undefined;
     language?: string;
     region?: string;
 }
+
+/**
+ * Internal travel-mode enum used in the `pb` options message.
+ *
+ * These values match the mode codes the endpoint returns on each route, which
+ * differ from the public Routes API enum.
+ */
+export const TRAVEL_MODE_VALUES: Record<TravelMode, number> = {
+    driving: 0,
+    walking: 2,
+    bicycling: 3,
+    two_wheeler: 9,
+};
 
 /**
  * Remove characters that would break the `pb` protobuf-text encoding.
@@ -50,12 +64,19 @@ function buildLocation(location: RouteLocation): string {
  * @param options.origin      - Origin waypoint.
  * @param options.destination - Destination waypoint.
  * @param options.waypoints   - Optional intermediate stopover waypoints.
+ * @param options.travelMode  - Optional travel mode (driving/walking/bicycling/two_wheeler).
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @returns The fully encoded directions endpoint URL.
  */
-export default function getDirectionsUrl({ origin, destination, waypoints = [], language = "en", region = "us" }: DirectionsUrl): string {
-    const pb = `!${[origin, ...waypoints, destination].map(buildLocation).join("!")}`;
+export default function getDirectionsUrl({ origin, destination, waypoints = [], travelMode, language = "en", region = "us" }: DirectionsUrl): string {
+    let pb = `!${[origin, ...waypoints, destination].map(buildLocation).join("!")}`;
+
+    if (travelMode !== undefined) {
+        // Field 6 carries client options; field 20/1 selects the travel mode.
+        pb += `!6m7!20m6!1e${TRAVEL_MODE_VALUES[travelMode]}!2e3!5e2!6b1!8b1!14b1`;
+    }
+
     const params = new URLSearchParams({
         authuser: "0",
         hl: language,

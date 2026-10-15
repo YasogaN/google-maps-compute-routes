@@ -11,11 +11,11 @@ export type {
   Coordinates,
   JsonArray,
   MatrixElement,
-  MatrixRow,
   ParsedLeg,
   ParsedRoute,
   ParsedStep,
   RouteLocation,
+  TravelMode,
 } from "./types.js";
 
 /**
@@ -46,6 +46,7 @@ export async function computeRoutes(
     destination,
     waypoints = [],
     polyline,
+    travel_mode,
     language = "en",
     region = "us",
     clean = false,
@@ -56,7 +57,7 @@ export async function computeRoutes(
   }: ComputeRoutesOptions
 ): Promise<ParsedRoute[] | JsonArray> {
   try {
-    validateParams({ url, origin, destination, waypoints, polyline, clean });
+    validateParams({ url, origin, destination, waypoints, polyline, travel_mode, clean });
 
     let originLocation: RouteLocation;
     let destinationLocation: RouteLocation;
@@ -87,6 +88,7 @@ export async function computeRoutes(
       origin: originLocation,
       destination: destinationLocation,
       waypoints: waypointLocations,
+      travelMode: travel_mode,
       language,
       region,
       client,

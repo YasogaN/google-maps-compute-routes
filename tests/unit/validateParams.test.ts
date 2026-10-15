@@ -65,6 +65,18 @@ describe("validateParams", () => {
       }),
     ).toThrow(/Invalid waypoints/);
   });
+
+  it("rejects an invalid travel mode", () => {
+    expect(() =>
+      validateParams({
+        url: undefined,
+        origin: "A",
+        destination: "B",
+        travel_mode: "flying" as unknown as "driving",
+        clean: false,
+      }),
+    ).toThrow(/Invalid travel mode/);
+  });
 });
 
 describe("parseDirectionsUrl", () => {

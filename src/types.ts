@@ -61,12 +61,15 @@ export interface RouteLocation {
     coordinates?: Coordinates;
 }
 
+export type TravelMode = "driving" | "walking" | "bicycling" | "two_wheeler";
+
 export interface ComputeRoutesOptions {
     url?: string;
     origin?: string | RouteLocation;
     destination?: string | RouteLocation;
     waypoints?: Array<string | RouteLocation>;
     polyline?: string | Coordinates[];
+    travel_mode?: TravelMode;
     language?: string;
     region?: string;
     clean?: boolean;
@@ -82,6 +85,7 @@ export interface Validate {
     destination: string | RouteLocation | undefined;
     waypoints?: Array<string | RouteLocation>;
     polyline?: string | Coordinates[] | undefined;
+    travel_mode?: TravelMode | undefined;
     clean: boolean;
 }
 
@@ -89,6 +93,7 @@ export interface FetchRoutesParams {
     origin: RouteLocation;
     destination: RouteLocation;
     waypoints: RouteLocation[];
+    travelMode?: TravelMode | undefined;
     language: string;
     region: string;
     client: Impit;
@@ -97,6 +102,7 @@ export interface FetchRoutesParams {
 export interface ComputeRouteMatrixOptions {
     origins: Array<string | RouteLocation>;
     destinations: Array<string | RouteLocation>;
+    travel_mode?: TravelMode;
     language?: string;
     region?: string;
     concurrency?: number;
