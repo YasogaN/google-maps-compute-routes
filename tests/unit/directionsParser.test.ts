@@ -110,4 +110,10 @@ describe("directionsParser", () => {
     const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [makeLeg()], null, null, []]] })]))[0]?.legs;
     expect(legs?.[0]?.steps).toHaveLength(1);
   });
+
+  it("parses a leg with a traffic block", () => {
+    const legSummary = [9, null, [1200, "1.2 km", 0], [300, "5 min"], null, null, null, null, null, null, [[330, "6 min"]]];
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [[legSummary, []]], null, null, []]] })]))[0]?.legs;
+    expect(legs?.[0]?.duration_in_traffic).toEqual({ seconds: 330, text: "6 min" });
+  });
 });
