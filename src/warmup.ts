@@ -1,4 +1,5 @@
 import type { Impit } from "impit";
+import { navigationHeaders } from "./headers.js";
 import type { RateLimiter } from "./rateLimiter.js";
 
 /**
@@ -24,7 +25,7 @@ export const WARM_UP_URL = "https://maps.google.com/";
  */
 export async function warmUp(client: Impit, limiter: RateLimiter): Promise<void> {
     await limiter.acquire();
-    const response = await client.fetch(WARM_UP_URL);
+    const response = await client.fetch(WARM_UP_URL, { headers: navigationHeaders() });
     if (!response.ok) {
         throw new Error(`Failed to warm up: ${response.status} ${response.statusText}`);
     }

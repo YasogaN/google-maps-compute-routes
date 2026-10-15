@@ -29,6 +29,15 @@ describe("createClient", () => {
     expect(headers["User-Agent"]).toContain("Chrome/151.0.0.0");
   });
 
+  it("leaves the per-request headers to the request", () => {
+    createClient({ proxy: { url: undefined } });
+
+    const headers = (ImpitMock.mock.calls[0]![0] as Record<string, unknown>).headers as Record<string, string>;
+    expect(headers).not.toHaveProperty("Referer");
+    expect(headers).not.toHaveProperty("Sec-Fetch-Dest");
+    expect(headers).not.toHaveProperty("Accept");
+  });
+
   it("passes the proxy url and ignores TLS errors when requested", () => {
     createClient({ proxy: { url: "http://proxy:8080", tls: true } });
 

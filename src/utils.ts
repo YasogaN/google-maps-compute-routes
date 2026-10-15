@@ -1,4 +1,5 @@
 import getDirectionsUrl, { TRAVEL_MODE_VALUES } from "./directionsEndpoint.js";
+import { buildReferer, fetchHeaders } from "./headers.js";
 import { decodePolyline } from "./polyline.js";
 import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
 
@@ -133,8 +134,9 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  */
 export async function fetchRoutes({ origin, destination, waypoints, travelMode, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
   const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, language, region });
+  const referer = buildReferer(origin, waypoints, destination);
   await limiter.acquire();
-  const response = await client.fetch(apiUrl);
+  const response = await client.fetch(apiUrl, { headers: fetchHeaders(referer) });
 
   if (!response.ok) {
     throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);

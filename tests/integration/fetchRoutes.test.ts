@@ -58,4 +58,16 @@ describe("fetchRoutes", () => {
 
     expect(order).toEqual(["acquire", "fetch"]);
   });
+
+  it("sends the fetch headers with a directions referer", async () => {
+    const client = clientOf(textResponse("[1]"));
+
+    await fetchRoutes({ ...base, client: asClient(client), limiter: new RateLimiter(1000) });
+
+    const init = client.fetch.mock.calls[0]![1] as { headers: Record<string, string> };
+    expect(init.headers["Sec-Fetch-Dest"]).toBe("empty");
+    expect(init.headers["Sec-Fetch-Mode"]).toBe("cors");
+    expect(init.headers["Sec-Fetch-Site"]).toBe("same-origin");
+    expect(init.headers["Referer"]).toBe("https://www.google.com/maps/dir/A/B/");
+  });
 });

@@ -24,12 +24,7 @@ export function createClient({ proxy }: HTTPClient): Impit {
         browser: "chrome151",
         headers: {
             "User-Agent": USER_AGENT,
-            "Accept": "*/*",
             "Accept-Language": "en-US,en;q=0.9",
-            "Referer": "https://www.google.com/maps/",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
         },
         ...(proxy && proxy.url && { proxyUrl: proxy.url, ignoreTlsErrors: proxy.tls ?? false })
     });
