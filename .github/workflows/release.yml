@@ -26,7 +26,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "26"
-          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing (OIDC) needs npm CLI >= 11.5.1; the npm bundled with
+      # the runner may be older, so pin the latest.
+      - name: Ensure a recent npm
+        run: npm install -g npm@latest
 
       # Build on the pinned Node that will also publish the artifact.
       - name: Install dependencies & Build
@@ -34,9 +38,11 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run build
 
-      # --- 1. PUBLISH TO NPM ---
+      # --- 1. PUBLISH TO NPM (trusted publishing, no token) ---
+      # The npm CLI exchanges the OIDC id-token for short-lived credentials and
+      # generates a provenance attestation. No NODE_AUTH_TOKEN is needed.
       - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks --provenance
+        run: npm publish --access public --provenance
 
       # --- 2. CREATE GITHUB RELEASE ---
       - name: Create GitHub Release
