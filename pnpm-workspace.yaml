@@ -1,5 +1,15 @@
 allowBuilds:
   esbuild: true
+minimumReleaseAgeExclude:
+  - impit-darwin-arm64@0.14.6
+  - impit-darwin-x64@0.14.6
+  - impit-linux-arm64-gnu@0.14.6
+  - impit-linux-arm64-musl@0.14.6
+  - impit-linux-x64-gnu@0.14.6
+  - impit-linux-x64-musl@0.14.6
+  - impit-win32-arm64-msvc@0.14.6
+  - impit-win32-x64-msvc@0.14.6
+  - impit@0.14.6
 onlyBuiltDependencies:
   - esbuild
 overrides:
