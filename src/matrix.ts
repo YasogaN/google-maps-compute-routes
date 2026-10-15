@@ -3,6 +3,7 @@ import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
 import { RateLimiter } from "./rateLimiter.js";
 import { fetchRoutes, toRouteLocation } from "./utils.js";
+import { warmUp } from "./warmup.js";
 import type {
     ComputeRouteMatrixOptions,
     ComputeRouteMatrixResult,
@@ -149,6 +150,9 @@ export async function computeRouteMatrix({
 
     const limiter = new RateLimiter(requests_per_second);
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
+
+    await warmUp(client, limiter);
+
     const elements: MatrixElement[] = new Array(pairs.length);
     let cursor = 0;
 

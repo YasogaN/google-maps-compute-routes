@@ -2,6 +2,7 @@ import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
 import { RateLimiter } from "./rateLimiter.js";
 import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "./utils.js";
+import { warmUp } from "./warmup.js";
 import type { ComputeRoutesOptions, JsonArray, ParsedRoute, RouteLocation } from "./types.js";
 
 export { decodePolyline, encodePolyline } from "./polyline.js";
@@ -88,6 +89,8 @@ export async function computeRoutes(
 
     const limiter = new RateLimiter(requests_per_second);
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
+
+    await warmUp(client, limiter);
 
     const data = await fetchRoutes({
       origin: originLocation,
