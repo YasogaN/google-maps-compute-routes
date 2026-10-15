@@ -108,4 +108,10 @@ describe("computeRoutes pipeline (integration)", () => {
   it("rejects invalid input", async () => {
     await expect(computeRoutes({ url: "https://example.com/maps/dir/A/B/" })).rejects.toThrow(/Scraper Error: Invalid host/);
   });
+
+  it("rejects an invalid requests_per_second", async () => {
+    await expect(computeRoutes({ origin: "A", destination: "B", requests_per_second: 0 })).rejects.toThrow(
+      /Scraper Error: Invalid requests per second/,
+    );
+  });
 });

@@ -127,11 +127,13 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @param options.language    - Response language (`hl`).
  * @param options.region      - Region bias (`gl`).
  * @param options.client      - The HTTP client to use.
+ * @param options.limiter     - Rate limiter gating when the request may start.
  * @returns The raw JSON array response.
  * @throws {Error} On fetch failure or invalid response format.
  */
-export async function fetchRoutes({ origin, destination, waypoints, travelMode, language, region, client }: FetchRoutesParams): Promise<JsonArray> {
+export async function fetchRoutes({ origin, destination, waypoints, travelMode, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
   const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, language, region });
+  await limiter.acquire();
   const response = await client.fetch(apiUrl);
 
   if (!response.ok) {

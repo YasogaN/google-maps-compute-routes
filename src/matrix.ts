@@ -1,6 +1,7 @@
 import type { Impit } from "impit";
 import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
+import { RateLimiter } from "./rateLimiter.js";
 import { fetchRoutes, toRouteLocation } from "./utils.js";
 import type {
     ComputeRouteMatrixOptions,
@@ -27,6 +28,7 @@ interface ComputeElementParams {
     language: string;
     region: string;
     client: Impit;
+    limiter: RateLimiter;
 }
 
 /**
@@ -66,9 +68,10 @@ async function computeElement({
     language,
     region,
     client,
+    limiter,
 }: ComputeElementParams): Promise<MatrixElement> {
     try {
-        const data = await fetchRoutes({ origin, destination, waypoints: [], travelMode, language, region, client });
+        const data = await fetchRoutes({ origin, destination, waypoints: [], travelMode, language, region, client, limiter });
         const route = directionsParser(data)[0];
         if (!route) return errorElement(originIndex, destinationIndex);
         return {
@@ -101,6 +104,7 @@ async function computeElement({
  * @param options.language     - Response language (`hl`), defaults to `en`.
  * @param options.region       - Region bias (`gl`), defaults to `us`.
  * @param options.concurrency  - Maximum in-flight requests, defaults to `8`.
+ * @param options.requests_per_second - Maximum requests to start per second, defaults to `1`.
  * @param options.proxy        - Optional proxy configuration.
  * @returns The origin/destination lists and the flat list of elements.
  * @throws {Error} If no origins/destinations are supplied, concurrency is invalid,
@@ -113,6 +117,7 @@ export async function computeRouteMatrix({
     language = "en",
     region = "us",
     concurrency = DEFAULT_CONCURRENCY,
+    requests_per_second = 1,
     proxy: {
         proxyUrl = undefined,
         ignoreTls = false,
@@ -142,6 +147,7 @@ export async function computeRouteMatrix({
         throw new Error(`Too many elements: ${pairs.length} exceeds the limit of ${MAX_MATRIX_ELEMENTS}`);
     }
 
+    const limiter = new RateLimiter(requests_per_second);
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
     const elements: MatrixElement[] = new Array(pairs.length);
     let cursor = 0;
@@ -160,6 +166,7 @@ export async function computeRouteMatrix({
                 language,
                 region,
                 client,
+                limiter,
             });
         }
     }

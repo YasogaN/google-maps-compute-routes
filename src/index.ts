@@ -1,5 +1,6 @@
 import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
+import { RateLimiter } from "./rateLimiter.js";
 import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "./utils.js";
 import type { ComputeRoutesOptions, JsonArray, ParsedRoute, RouteLocation } from "./types.js";
 
@@ -34,6 +35,7 @@ export type {
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @param options.clean       - When `true`, return parsed `ParsedRoute` objects.
+ * @param options.requests_per_second - Maximum requests to start per second, defaults to `1`.
  * @param options.proxy       - Optional proxy configuration.
  * @param options.proxy.proxyUrl  - Proxy URL string.
  * @param options.proxy.ignoreTls - Bypass TLS errors when using the proxy.
@@ -51,6 +53,7 @@ export async function computeRoutes(
     language = "en",
     region = "us",
     clean = false,
+    requests_per_second = 1,
     proxy: {
       proxyUrl = undefined,
       ignoreTls = false
@@ -83,6 +86,7 @@ export async function computeRoutes(
       waypointLocations = waypoints.map(toRouteLocation);
     }
 
+    const limiter = new RateLimiter(requests_per_second);
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
 
     const data = await fetchRoutes({
@@ -93,6 +97,7 @@ export async function computeRoutes(
       language,
       region,
       client,
+      limiter,
     });
 
     if (clean) {

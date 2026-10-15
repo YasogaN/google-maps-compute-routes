@@ -24,7 +24,7 @@ describe("computeRouteMatrix", () => {
       mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
     }
 
-    const matrix = await computeRouteMatrix({ origins: ["O1", "O2"], destinations: ["D1", "D2"] });
+    const matrix = await computeRouteMatrix({ origins: ["O1", "O2"], destinations: ["D1", "D2"], requests_per_second: 1000 });
 
     expect(matrix.origins).toHaveLength(2);
     expect(matrix.destinations).toHaveLength(2);
@@ -46,7 +46,7 @@ describe("computeRouteMatrix", () => {
       .mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))))
       .mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
 
-    const matrix = await computeRouteMatrix({ origins: ["O1", "O2"], destinations: ["D1", "D2"], concurrency: 1 });
+    const matrix = await computeRouteMatrix({ origins: ["O1", "O2"], destinations: ["D1", "D2"], concurrency: 1, requests_per_second: 1000 });
 
     expect(cellOf(matrix.elements, 0, 0)).toMatchObject({ status: "OK", condition: "ROUTE_EXISTS" });
     expect(cellOf(matrix.elements, 0, 1)).toMatchObject({ status: "ERROR", condition: "ROUTE_NOT_FOUND", distance: null });
@@ -85,6 +85,12 @@ describe("computeRouteMatrix", () => {
     await expect(
       computeRouteMatrix({ origins: ["O"], destinations: ["D"], concurrency: 0 }),
     ).rejects.toThrow(/Invalid concurrency/);
+  });
+
+  it("rejects an invalid requests_per_second", async () => {
+    await expect(
+      computeRouteMatrix({ origins: ["O"], destinations: ["D"], requests_per_second: 0 }),
+    ).rejects.toThrow(/Invalid requests per second/);
   });
 
   it("rejects a matrix larger than the documented element limit", async () => {

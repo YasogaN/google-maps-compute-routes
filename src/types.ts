@@ -1,4 +1,5 @@
 import type { Impit } from "impit";
+import type { RateLimiter } from "./rateLimiter.js";
 
 type JsonValue =
     | string
@@ -73,6 +74,7 @@ export interface ComputeRoutesOptions {
     language?: string;
     region?: string;
     clean?: boolean;
+    requests_per_second?: number;
     proxy?: {
         proxyUrl?: string | undefined;
         ignoreTls?: boolean;
@@ -97,6 +99,7 @@ export interface FetchRoutesParams {
     language: string;
     region: string;
     client: Impit;
+    limiter: RateLimiter;
 }
 
 export interface ComputeRouteMatrixOptions {
@@ -106,6 +109,7 @@ export interface ComputeRouteMatrixOptions {
     language?: string;
     region?: string;
     concurrency?: number;
+    requests_per_second?: number;
     proxy?: {
         proxyUrl?: string | undefined;
         ignoreTls?: boolean;
