@@ -1,0 +1,44 @@
+{
+  "name": "google-maps-compute-routes",
+  "version": "1.0.0",
+  "description": "A routes scraper made for Google Maps",
+  "homepage": "https://github.com/YasogaN/google-maps-compute-routes",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YasogaN/google-maps-compute-routes"
+  },
+  "license": "MIT",
+  "author": "YasogaN",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/",
+    "ReadMe.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/clean.mjs && tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run tests/unit tests/integration",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
+    "test:live": "vitest run tests/live",
+    "test:coverage": "vitest run tests/unit tests/integration --coverage",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "impit": "^0.8.2",
+    "tough-cookie": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/tough-cookie": "^4.0.5",
+    "@vitest/coverage-v8": "^5.0.3",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  }
+}
