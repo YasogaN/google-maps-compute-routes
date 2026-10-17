@@ -1,7 +1,7 @@
 import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
 import { RateLimiter } from "./rateLimiter.js";
-import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "./utils.js";
+import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, toUnixSeconds, validateParams } from "./utils.js";
 import { warmUp } from "./warmup.js";
 import type { ComputeRoutesOptions, JsonArray, ParsedRoute, RouteLocation } from "./types.js";
 
@@ -33,6 +33,9 @@ export type {
  * @param options.destination - Destination query or location (used without a URL).
  * @param options.waypoints   - Intermediate stopover waypoints.
  * @param options.polyline    - Encoded polyline or coordinate path to evaluate; takes precedence over origin/destination/waypoints.
+ * @param options.travel_mode - Optional travel mode (`driving`, `walking`, `bicycling`, `two_wheeler`).
+ * @param options.departure_time - Departure time (`Date` or Unix seconds) to plan the trip for.
+ * @param options.arrival_time - Arrival time (`Date` or Unix seconds); mutually exclusive with `departure_time`.
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @param options.clean       - When `true`, return parsed `ParsedRoute` objects.
@@ -51,6 +54,8 @@ export async function computeRoutes(
     waypoints = [],
     polyline,
     travel_mode,
+    departure_time,
+    arrival_time,
     language = "en",
     region = "us",
     clean = false,
@@ -62,7 +67,7 @@ export async function computeRoutes(
   }: ComputeRoutesOptions
 ): Promise<ParsedRoute[] | JsonArray> {
   try {
-    validateParams({ url, origin, destination, waypoints, polyline, travel_mode, clean });
+    validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, clean });
 
     let originLocation: RouteLocation;
     let destinationLocation: RouteLocation;
@@ -97,6 +102,8 @@ export async function computeRoutes(
       destination: destinationLocation,
       waypoints: waypointLocations,
       travelMode: travel_mode,
+      departureTime: departure_time !== undefined ? toUnixSeconds(departure_time, "departure_time") : undefined,
+      arrivalTime: arrival_time !== undefined ? toUnixSeconds(arrival_time, "arrival_time") : undefined,
       language,
       region,
       client,

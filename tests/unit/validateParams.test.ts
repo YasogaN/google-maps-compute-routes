@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_INTERMEDIATE_WAYPOINTS, parseDirectionsUrl, parsePolylineInput, toRouteLocation, validateParams } from "../../src/utils.js";
+import { MAX_INTERMEDIATE_WAYPOINTS, parseDirectionsUrl, parsePolylineInput, toRouteLocation, toUnixSeconds, validateParams } from "../../src/utils.js";
 
 describe("validateParams", () => {
   it("accepts a google.com directions URL without origin/destination", () => {
@@ -88,6 +88,39 @@ describe("validateParams", () => {
         clean: false,
       }),
     ).toThrow(/Too many waypoints/);
+  });
+
+  it("rejects specifying both departure_time and arrival_time", () => {
+    expect(() =>
+      validateParams({
+        url: undefined,
+        origin: "A",
+        destination: "B",
+        departure_time: 1800000000,
+        arrival_time: 1800000000,
+        clean: false,
+      }),
+    ).toThrow(/either departure_time or arrival_time/);
+  });
+
+  it("rejects an invalid departure_time", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: "A", destination: "B", departure_time: new Date("nope"), clean: false }),
+    ).toThrow(/Invalid departure_time/);
+  });
+});
+
+describe("toUnixSeconds", () => {
+  it("floors a seconds number to whole seconds", () => {
+    expect(toUnixSeconds(1800000000.9, "t")).toBe(1800000000);
+  });
+
+  it("converts a Date to Unix seconds", () => {
+    expect(toUnixSeconds(new Date(1800000000000), "t")).toBe(1800000000);
+  });
+
+  it("rejects an invalid date", () => {
+    expect(() => toUnixSeconds(new Date("nope"), "t")).toThrow(/Invalid t/);
   });
 });
 

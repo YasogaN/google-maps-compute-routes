@@ -80,6 +80,24 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(calledUrl).toContain("1sFactory");
   });
 
+  it("passes a departure time into the pb", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))));
+
+    await compute({ origin: "A", destination: "B", departure_time: 1800000000 });
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("19m3!1e0!2e2!3j1800000000");
+  });
+
+  it("converts a Date arrival time into the pb", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))));
+
+    await compute({ origin: "A", destination: "B", arrival_time: new Date(1800000000000) });
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("19m3!1e1!2e2!3j1800000000");
+  });
+
   it("passes intermediate waypoints through to the request", async () => {
     mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([]))));
 

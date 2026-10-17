@@ -74,4 +74,19 @@ describe("computeRoutes (live)", () => {
 
     expect(walking[0]!.duration.seconds).toBeGreaterThan(driving[0]!.duration.seconds);
   });
+
+  it("plans the route for a chosen departure time", async () => {
+    const departure = new Date(Date.now() + 3600 * 1000);
+    const routes = (await computeRoutes({
+      origin: ORIGIN,
+      destination: DESTINATION,
+      region: "lk",
+      departure_time: departure,
+      clean: true,
+    })) as ParsedRoute[];
+
+    expect(routes.length).toBeGreaterThan(0);
+    expect(routes[0]!.duration.seconds).toBeGreaterThan(0);
+    expect(routes[0]!.duration_in_traffic?.seconds).toBeGreaterThan(0);
+  });
 });

@@ -71,6 +71,8 @@ export interface ComputeRoutesOptions {
     waypoints?: Array<string | RouteLocation>;
     polyline?: string | Coordinates[];
     travel_mode?: TravelMode;
+    departure_time?: Date | number;
+    arrival_time?: Date | number;
     language?: string;
     region?: string;
     clean?: boolean;
@@ -88,6 +90,8 @@ export interface Validate {
     waypoints?: Array<string | RouteLocation>;
     polyline?: string | Coordinates[] | undefined;
     travel_mode?: TravelMode | undefined;
+    departure_time?: Date | number | undefined;
+    arrival_time?: Date | number | undefined;
     clean: boolean;
 }
 
@@ -96,6 +100,8 @@ export interface FetchRoutesParams {
     destination: RouteLocation;
     waypoints: RouteLocation[];
     travelMode?: TravelMode | undefined;
+    departureTime?: number | undefined;
+    arrivalTime?: number | undefined;
     language: string;
     region: string;
     client: Impit;

@@ -26,7 +26,7 @@ export const MAX_INTERMEDIATE_WAYPOINTS = 25;
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, clean }: Validate) {
+export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, clean }: Validate) {
   if (polyline !== undefined) {
     // The path comes from the polyline, so no URL or waypoints are required.
   } else if (url !== undefined) {
@@ -59,9 +59,32 @@ export function validateParams({ url, origin, destination, waypoints, polyline, 
     throw new Error(`Invalid travel mode: ${travel_mode}`);
   }
 
+  if (departure_time !== undefined && arrival_time !== undefined) {
+    throw new Error("Specify either departure_time or arrival_time, not both");
+  }
+
+  if (departure_time !== undefined) toUnixSeconds(departure_time, "departure_time");
+  if (arrival_time !== undefined) toUnixSeconds(arrival_time, "arrival_time");
+
   if (typeof clean !== "boolean") {
     throw new Error(`Invalid value for 'clean': ${clean}`);
   }
+}
+
+/**
+ * Convert a `Date` or a Unix-seconds number to whole Unix seconds.
+ *
+ * @param value The `Date` or Unix-seconds value.
+ * @param name  Field name used in the error message.
+ * @returns Whole Unix seconds.
+ * @throws {Error} If the value is not a valid date or number.
+ */
+export function toUnixSeconds(value: Date | number, name: string): number {
+  const millis = value instanceof Date ? value.getTime() : value * 1000;
+  if (!Number.isFinite(millis)) {
+    throw new Error(`Invalid ${name}: ${String(value)}`);
+  }
+  return Math.floor(millis / 1000);
 }
 
 /**
@@ -125,6 +148,8 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @param options.destination - Destination waypoint.
  * @param options.waypoints   - Intermediate stopover waypoints.
  * @param options.travelMode  - Optional travel mode.
+ * @param options.departureTime - Optional departure time (Unix seconds).
+ * @param options.arrivalTime - Optional arrival time (Unix seconds).
  * @param options.language    - Response language (`hl`).
  * @param options.region      - Region bias (`gl`).
  * @param options.client      - The HTTP client to use.
@@ -132,8 +157,8 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @returns The raw JSON array response.
  * @throws {Error} On fetch failure or invalid response format.
  */
-export async function fetchRoutes({ origin, destination, waypoints, travelMode, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
-  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, language, region });
+export async function fetchRoutes({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
+  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, language, region });
   const referer = buildReferer(origin, waypoints, destination);
   await limiter.acquire();
   const response = await client.fetch(apiUrl, { headers: fetchHeaders(referer) });
