@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `departure_time` and `arrival_time` options on `computeRoutes()` (`Date` or Unix seconds, mutually exclusive) that plan the trip for a chosen time. The endpoint returns the traffic-aware duration for that time instead of "now"
+
+### Fixed
+
+- `directionsParser` read each step group as a leg, so a route reported one "leg" per step group instead of per waypoint; it now reads the leg list from `route[1]` (one leg per waypoint interval) and flattens each leg's step groups into its steps, so a leg's `duration` is the time between its two waypoints
+
+### Documentation
+
+- Added a [departure/arrival and per-leg timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md) documenting the `19m3` time field the Maps web client sends and where the time between waypoints is read
+
 ## [1.1.0] - 2026-10-15
 
 ### Added
