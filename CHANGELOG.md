@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - `departure_time` and `arrival_time` options on `computeRoutes()` (`Date` or Unix seconds, mutually exclusive) that plan the trip for a chosen time. The endpoint returns the traffic-aware duration for that time instead of "now"
+- `departure_time` on `computeRouteMatrix()`, applied to every origin/destination pair
 
 ### Fixed
 

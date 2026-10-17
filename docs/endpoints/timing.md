@@ -167,7 +167,8 @@ const routes = await computeRoutes({
 ```
 
 `arrival_time` uses the arrive-by enum (`1e1`) instead. Setting both throws, and
-either accepts a `Date` or a Unix-seconds number.
+either accepts a `Date` or a Unix-seconds number. `computeRouteMatrix()` takes
+`departure_time` as well and applies it to every origin/destination pair.
 
 ## References
 

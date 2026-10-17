@@ -110,7 +110,7 @@ matrix.elements[0].duration;          // live ETA (includes traffic)
 matrix.elements[0].static_duration;   // ETA without traffic
 ```
 
-The result mirrors the Routes API `computeRouteMatrix` stream: a flat list of elements, one per origin × destination pair. The endpoint is point-to-point, so the matrix is built by issuing one request per pair with bounded concurrency. Requests are paced to one per second by default (`requests_per_second`), so the fan-out does not trip the endpoint's anti-bot rate limiting. Failed pairs return `status: "ERROR"` instead of rejecting the whole matrix, and the documented 625 element limit is enforced.
+The result mirrors the Routes API `computeRouteMatrix` stream: a flat list of elements, one per origin × destination pair. The endpoint is point-to-point, so the matrix is built by issuing one request per pair with bounded concurrency. Requests are paced to one per second by default (`requests_per_second`), so the fan-out does not trip the endpoint's anti-bot rate limiting. Failed pairs return `status: "ERROR"` instead of rejecting the whole matrix, and the documented 625 element limit is enforced. Pass `departure_time` (a `Date` or Unix seconds) to plan every pair for a chosen time.
 
 ### Travel modes
 
