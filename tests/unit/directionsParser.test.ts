@@ -126,6 +126,11 @@ describe("directionsParser", () => {
     expect(legs?.[0]?.steps).toHaveLength(3);
   });
 
+  it("treats a step group with no nested list as a step", () => {
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [makeStep()], null, null, []]] })]))[0]?.legs;
+    expect(legs?.[0]?.steps).toHaveLength(1);
+  });
+
   it("reads one leg per waypoint interval", () => {
     const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, []], [LEG_SUMMARY, []]] })]))[0]?.legs;
     expect(legs).toHaveLength(2);
