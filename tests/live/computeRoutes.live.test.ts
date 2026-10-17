@@ -89,4 +89,20 @@ describe("computeRoutes (live)", () => {
     expect(routes[0]!.duration.seconds).toBeGreaterThan(0);
     expect(routes[0]!.duration_in_traffic?.seconds).toBeGreaterThan(0);
   });
+
+  it("returns a traffic-aware duration for each waypoint leg", async () => {
+    const routes = (await computeRoutes({
+      origin: "Nugegoda",
+      destination: "Mount Lavinia",
+      waypoints: ["Kaduwela"],
+      region: "lk",
+      departure_time: new Date(Date.now() + 3600 * 1000),
+      clean: true,
+    })) as ParsedRoute[];
+
+    const legs = routes[0]!.legs;
+    expect(legs).toHaveLength(2);
+    expect(legs[0]!.duration_in_traffic).not.toBeNull();
+    expect(legs[1]!.duration_in_traffic).not.toBeNull();
+  });
 });

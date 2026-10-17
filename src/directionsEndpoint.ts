@@ -25,6 +25,18 @@ export const TRAVEL_MODE_VALUES: Record<TravelMode, number> = {
 };
 
 /**
+ * Traffic-aware routing block, sent inside the `6m` feature block.
+ *
+ * Captured from the Maps web client, which always sends it. Without it the
+ * endpoint returns traffic for a direct trip but not for a routed one: a
+ * request with waypoints comes back with no live traffic at all, and every
+ * leg's traffic block is empty. With it, each leg carries its own traffic-aware
+ * duration (computed for the time the vehicle reaches that leg from the chosen
+ * departure), so the time between waypoints reflects traffic.
+ */
+const TRAFFIC_BLOCK = "2m4!5m1!6e2!20e3!39b1";
+
+/**
  * Remove characters that would break the `pb` protobuf-text encoding.
  *
  * `!` is the field delimiter, so a user supplied place name containing one is
@@ -82,12 +94,13 @@ function buildLocation(location: RouteLocation): string {
 export default function getDirectionsUrl({ origin, destination, waypoints = [], travelMode, departureTime, arrivalTime, language = "en", region = "us" }: DirectionsUrl): string {
     let pb = `!${[origin, ...waypoints, destination].map(buildLocation).join("!")}`;
 
-    // Both options live in the `6m` feature block: `19m3` for the time (enum 0
-    // is depart at, 1 is arrive by) and `20m6` for the travel mode. The block's
-    // `m` count is the total number of tokens it contains, so each child
-    // contributes 1 plus its own token count (4 for the time, 7 for the mode).
-    const options: string[] = [];
-    let count = 0;
+    // The `6m` feature block always carries the traffic-aware routing block, so
+    // a routed (waypoint) trip returns per-leg traffic too. The time (`19m3`,
+    // enum 0 depart / 1 arrive) and the travel mode (`20m6`) join it. The
+    // block's `m` count is the total number of tokens it contains, so each
+    // child contributes 1 plus its own token count (5 traffic, 4 time, 7 mode).
+    const options: string[] = [TRAFFIC_BLOCK];
+    let count = 5;
     if (departureTime !== undefined) {
         options.push(`19m3!1e0!2e2!3j${Math.floor(departureTime)}`);
         count += 4;
@@ -99,9 +112,7 @@ export default function getDirectionsUrl({ origin, destination, waypoints = [], 
         options.push(`20m6!1e${TRAVEL_MODE_VALUES[travelMode]}!2e3!5e2!6b1!8b1!14b1`);
         count += 7;
     }
-    if (options.length > 0) {
-        pb += `!6m${count}!${options.join("!")}`;
-    }
+    pb += `!6m${count}!${options.join("!")}`;
 
     const params = new URLSearchParams({
         authuser: "0",
