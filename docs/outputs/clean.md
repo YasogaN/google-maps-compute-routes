@@ -50,6 +50,8 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
 
 The above format is self-explanatory. `duration_in_traffic` and `duration_range` are populated for driving-style routes; transit-style alternatives may omit them and return `null`.
 
+`legs` holds one entry per waypoint interval: a direct trip has one leg, and each intermediate waypoint adds one. A leg's `duration` (and `duration_in_traffic`, when Google supplies it) is the time between its two waypoints. The endpoint returns no departure or arrival clock times for driving, so derive them by chaining the leg durations from a known departure — see the [timing map](../endpoints/timing.md).
+
 `overview_path` is an approximate path derived from the step boundaries: one coordinate per step (its `start_location`) followed by the destination. It is a simplified skeleton, not a dense encoded polyline, because the endpoint does not return one. When `waypoints` are supplied each stopover adds an extra leg and its own steps to the path.
 
 # Reporting Issues
