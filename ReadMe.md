@@ -128,6 +128,24 @@ const routes = await computeRoutes({
 
 See [the SKU mapping](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/skus.md) for how travel mode and waypoint count relate to the Routes API billing tiers.
 
+### Departure and arrival times
+
+Pass `departure_time` or `arrival_time` (a `Date` or Unix seconds) to plan the trip for a chosen time. The endpoint then returns the traffic-aware duration for that time instead of "now". The two options are mutually exclusive:
+
+```ts
+const routes = await computeRoutes({
+  origin: "Nugegoda",
+  destination: "Mount Lavinia",
+  region: "lk",
+  departure_time: new Date("2026-10-19T12:00:00+05:30"),
+  clean: true,
+});
+// routes[0].legs is one leg per waypoint; each leg.duration is the
+// traffic-aware time between its two waypoints
+```
+
+See the [timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md) for the request field and how per-waypoint timing works.
+
 ### Session cookies
 
 Before a call issues any directions request it fetches `https://maps.google.com/` once to collect Google's session cookies (`NID`, `AEC`, `SEARCH_SAMESITE` and `__Secure-STRP`) into the client's cookie jar. This preflight is paced by `requests_per_second` like any other request, and a matrix warms up once for the whole run rather than once per pair.
@@ -147,6 +165,10 @@ All arguments are passed as a single object:
 `polyline` - `string | Coordinates[]`: Optional encoded polyline or coordinate path. When given it takes precedence over `url`, `origin`, `destination` and `waypoints`, and the traffic-aware ETA for that path is returned.
 
 `travel_mode` - `"driving" | "walking" | "bicycling" | "two_wheeler"`: Optional travel mode. When omitted, the endpoint's default set of routes is returned.
+
+`departure_time` - `Date | number`: Departure time to plan for, as a `Date` or Unix seconds. When omitted the route is planned from now. Mutually exclusive with `arrival_time`.
+
+`arrival_time` - `Date | number`: Arrival time to plan for, as a `Date` or Unix seconds. Mutually exclusive with `departure_time`.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 
@@ -171,6 +193,8 @@ A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latit
 ## Documentation
 
 All documentation related to endpoints and URL formats used in this project can be found in the [docs](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/) folder. This module uses the `preview/directions` endpoint to compute routes. Note that everything included here was based on my research, so errors could be present. A pull request is always welcome (see [contributing](#contributing)).
+
+For departure/arrival time control and per-waypoint leg timing, see the [timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md). The route is returned as one leg per waypoint, and `departure_time` / `arrival_time` plan the trip for a chosen time.
 
 ---
 
