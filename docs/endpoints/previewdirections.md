@@ -59,10 +59,10 @@ Every stopover splits the route into a separate segment, and the response stores
 
 ## Travel mode
 
-When a travel mode is requested, an options message is appended:
+When a travel mode is requested, a `20m6` message is added to the `6m` feature block:
 
 ```
-!6m7!20m6!1e<mode>!2e3!5e2!6b1!8b1!14b1
+!6m12!2m4!5m1!6e2!20e3!39b1!20m6!1e<mode>!2e3!5e2!6b1!8b1!14b1
 ```
 
 The `<mode>` value is the internal travel-mode enum, which matches the mode code the endpoint returns on each route:
@@ -76,6 +76,16 @@ The `<mode>` value is the internal travel-mode enum, which matches the mode code
 
 Without this message the endpoint returns its default set of driving routes (sometimes with an alternative mode), so set it explicitly for predictable results. Transit (1) and taxi (4) are not available in all regions.
 
+## The `6m` feature block
+
+Every request carries a `6m` feature block. Its first child is the traffic-aware routing block the Maps web client sends:
+
+```
+!2m4!5m1!6e2!20e3!39b1
+```
+
+Without it a direct trip still returns live traffic, but a trip with intermediate waypoints returns none: the route's traffic equals its typical duration and every leg's traffic block is empty, so the time between waypoints ignores traffic and the departure time. With it, every leg carries its own traffic-aware duration. This module always sends it. The travel-mode and time messages join it, and the block's `m` count is the total number of tokens it holds (5 for the traffic block, plus 4 for a time, plus 7 for a travel mode).
+
 ## Departure and arrival time
 
 The endpoint plans from "now" unless a time is selected. When the Maps web client has a departure or an arrival set it adds a `19m3` message to the `6m` feature block:
@@ -88,7 +98,7 @@ The endpoint plans from "now" unless a time is selected. When the Maps web clien
 - `3j` - the timestamp in true Unix seconds.
 - The message is a direct child of `6m`, whose `m` count grows by four (the `19m3` token plus its three children).
 
-Without a travel mode the block is `!6m4!19m3!1e0!2e2!3j<seconds>`; with one they share the block, e.g. `!6m11!19m3!1e0!2e2!3j<seconds>!20m6!1e0!2e3!5e2!6b1!8b1!14b1`.
+Without a travel mode the block is `!6m9!2m4!5m1!6e2!20e3!39b1!19m3!1e0!2e2!3j<seconds>`; with a travel mode the three messages share the block, e.g. `!6m16!2m4!5m1!6e2!20e3!39b1!19m3!1e0!2e2!3j<seconds>!20m6!1e0!2e3!5e2!6b1!8b1!14b1`.
 
 This module sets it through the `departure_time` and `arrival_time` options (see [Arguments](../../ReadMe.md#arguments)). The full endpoint comparison is in the [timing map](timing.md).
 

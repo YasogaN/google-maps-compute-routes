@@ -91,6 +91,22 @@ time:
 A departure in the past is accepted for driving (a three-day-old timestamp came
 back with a route), unlike the keyed APIs, which reject it outside transit.
 
+### The traffic-aware routing block
+
+Every request this module sends also carries the web client's traffic-aware
+routing block in the `6m` feature block:
+
+```
+!2m4!5m1!6e2!20e3!39b1
+```
+
+Without it a direct trip still returns traffic, but a trip with waypoints
+returns none: the route's traffic equals its typical duration and every leg's
+traffic block is empty. That made the time between waypoints static and ignored
+the departure time. With the block, each leg carries its own traffic-aware
+duration, computed for the time the vehicle reaches that leg, so chaining the
+legs from the departure gives a traffic-aware arrival at each waypoint.
+
 ## What the keyed APIs add
 
 The keyless endpoint always routes between two points for a chosen time. The
@@ -132,9 +148,10 @@ legs](https://github.com/PimpinPumpkin/Vela) (`legs = route[1]`,
 - **Time between waypoints** — `route[1][i][0][3][0]` (seconds) with its text at
   `[3][1]`. This is the value the module exposes per leg.
 - **Distance** — `route[1][i][0][2][0]`.
-- **Traffic-aware leg time** — `route[1][i][0][10]` when present. It is often
-  empty for non-final legs even when the route-level `route[0][10]` carries
-  live traffic, so a missing leg traffic block means "unknown", not zero.
+- **Traffic-aware leg time** — `route[1][i][0][10]`, present on every leg when
+  the request carries the traffic-aware routing block (below). The endpoint
+  returns no leg traffic without it, so a routed trip would show only static
+  durations.
 - **No clock times for driving.** A scan of a live driving response found no
   departure/arrival clock strings or epoch timestamps tied to the route. Arrival
   is only a human sentence at `route[22][8][0][0]` ("You should arrive around
