@@ -19,7 +19,7 @@ describe("computeRoutes (live)", () => {
     const first = routes[0]!;
     expect(first.distance.meters).toBeGreaterThan(0);
     expect(first.duration.seconds).toBeGreaterThan(0);
-    expect(first.legs.length).toBeGreaterThan(0);
+    expect(first.legs).toHaveLength(1);
     expect(first.legs[0]!.steps.length).toBeGreaterThan(0);
     expect(first.legs[0]!.steps[0]!.maneuver.length).toBeGreaterThan(0);
   });
@@ -39,7 +39,7 @@ describe("computeRoutes (live)", () => {
     })) as ParsedRoute[];
 
     const first = routes[0]!;
-    expect(first.legs.length).toBeGreaterThan(1);
+    expect(first.legs).toHaveLength(2);
     expect(first.overview_path.length).toBeGreaterThan(0);
     expect(first.overview_path[0]!.latitude).toBeGreaterThan(0);
   });

@@ -78,7 +78,34 @@ function parseStep(step: unknown): ParsedStep | null {
 }
 
 /**
- * Parse a single leg (a portion of a route between two waypoints).
+ * Collect the navigable steps of a leg.
+ *
+ * A leg stores its steps as an array of groups, and a group's `[1]` holds the
+ * individual step messages with the HTML instructions. A group with no nested
+ * list is treated as a step itself so a differently shaped response still
+ * yields steps.
+ *
+ * @param leg The raw leg array.
+ * @returns The parsed steps.
+ */
+function parseSteps(leg: unknown): ParsedStep[] {
+    const groups = getPath(leg, [1]);
+    if (!Array.isArray(groups)) return [];
+
+    const steps: ParsedStep[] = [];
+    for (const group of groups) {
+        const nested = getPath(group, [1]);
+        const source = Array.isArray(nested) ? nested : [group];
+        for (const step of source) {
+            const parsed = parseStep(step);
+            if (parsed) steps.push(parsed);
+        }
+    }
+    return steps;
+}
+
+/**
+ * Parse a single leg (the portion of a route between two waypoints).
  *
  * @param leg The raw leg array.
  * @returns The parsed leg, or `null` when the entry is malformed.
@@ -88,42 +115,36 @@ function parseLeg(leg: unknown): ParsedLeg | null {
     if (!Array.isArray(summary)) return null;
 
     const traffic = getPath(summary, [10]);
-    const stepsRaw = getPath(leg, [1]);
-    const steps = Array.isArray(stepsRaw)
-        ? stepsRaw.map(parseStep).filter((s): s is ParsedStep => s !== null)
-        : [];
+    const trafficSeconds = getPath(traffic, [0, 0]);
 
     return {
         distance: parseDistance(getPath(summary, [2])),
         duration: parseDuration(getPath(summary, [3])),
-        duration_in_traffic: Array.isArray(traffic)
-            ? { seconds: numberOrZero(getPath(traffic, [0, 0])), text: stringOrEmpty(getPath(traffic, [0, 1])) }
+        duration_in_traffic: Array.isArray(traffic) && typeof trafficSeconds === "number"
+            ? { seconds: trafficSeconds, text: stringOrEmpty(getPath(traffic, [0, 1])) }
             : null,
-        steps,
+        steps: parseSteps(leg),
     };
 }
 
 /**
- * Collect every leg across the route's waypoint segments.
+ * Collect the route's legs, one per waypoint interval.
  *
- * A route with intermediate waypoints stores one segment per stopover, each
- * carrying its own leg list, so the legs are flattened in waypoint order.
+ * The route's `[1]` is already the leg list: a direct trip returns one leg, and
+ * each intermediate waypoint adds one. Each leg carries its own distance and
+ * duration, so the time between waypoints is read here.
  *
  * @param route The raw route array.
  * @returns The parsed legs.
  */
 function parseLegs(route: unknown): ParsedLeg[] {
-    const segments = getPath(route, [1]);
-    if (!Array.isArray(segments)) return [];
+    const legsRaw = getPath(route, [1]);
+    if (!Array.isArray(legsRaw)) return [];
 
     const legs: ParsedLeg[] = [];
-    for (const segment of segments) {
-        const segmentLegs = getPath(segment, [1]);
-        if (!Array.isArray(segmentLegs)) continue;
-        for (const leg of segmentLegs) {
-            const parsed = parseLeg(leg);
-            if (parsed) legs.push(parsed);
-        }
+    for (const leg of legsRaw) {
+        const parsed = parseLeg(leg);
+        if (parsed) legs.push(parsed);
     }
     return legs;
 }

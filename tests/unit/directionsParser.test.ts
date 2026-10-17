@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import directionsParser from "../../src/directionsParser.js";
-import { makeLeg, makeResponse, makeRoute } from "../helpers/directions.js";
+import { makeLeg, makeResponse, makeRoute, makeStep } from "../helpers/directions.js";
 
 const LEG_SUMMARY = [9, null, [1200, "1.2 km", 0], [300, "5 min"], null, null, null, null];
 
@@ -29,7 +29,7 @@ describe("directionsParser", () => {
         {
           distance: { meters: 1200, text: "1.2 km" },
           duration: { seconds: 300, text: "5 min" },
-          duration_in_traffic: null,
+          duration_in_traffic: { seconds: 330, text: "6 min" },
           steps: [
             {
               instructions:
@@ -79,12 +79,12 @@ describe("directionsParser", () => {
   });
 
   it("skips malformed legs", () => {
-    expect(directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, ["bad"]]] })]))[0]?.legs).toEqual([]);
-    expect(directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [["bad", []]]]] })]))[0]?.legs).toEqual([]);
+    expect(directionsParser(makeResponse([makeRoute({ 1: [["bad", ["x"]]] })]))[0]?.legs).toEqual([]);
+    expect(directionsParser(makeResponse([makeRoute({ 1: [["bad", [["bad", []]]]] })]))[0]?.legs).toEqual([]);
   });
 
   it("returns no steps when the steps node is not an array", () => {
-    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [[LEG_SUMMARY, "bad"]], null, null, []]] })]))[0]?.legs;
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, "bad"]] })]))[0]?.legs;
     expect(legs?.[0]?.steps).toEqual([]);
   });
 
@@ -116,9 +116,24 @@ describe("directionsParser", () => {
     expect(legs?.[0]?.steps).toHaveLength(1);
   });
 
+  it("flattens a leg's step groups into its steps", () => {
+    const groups = [
+      [LEG_SUMMARY, [makeStep(), makeStep()]],
+      [LEG_SUMMARY, [makeStep()]],
+    ];
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, groups, null, null, []]] })]))[0]?.legs;
+    expect(legs).toHaveLength(1);
+    expect(legs?.[0]?.steps).toHaveLength(3);
+  });
+
+  it("reads one leg per waypoint interval", () => {
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, []], [LEG_SUMMARY, []]] })]))[0]?.legs;
+    expect(legs).toHaveLength(2);
+  });
+
   it("parses a leg with a traffic block", () => {
     const legSummary = [9, null, [1200, "1.2 km", 0], [300, "5 min"], null, null, null, null, null, null, [[330, "6 min"]]];
-    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, [[legSummary, []]], null, null, []]] })]))[0]?.legs;
+    const legs = directionsParser(makeResponse([makeRoute({ 1: [[legSummary, []]] })]))[0]?.legs;
     expect(legs?.[0]?.duration_in_traffic).toEqual({ seconds: 330, text: "6 min" });
   });
 
@@ -148,8 +163,8 @@ describe("directionsParser", () => {
     expect(parsed?.start_location).toBeNull();
   });
 
-  it("skips a segment whose legs node is not an array", () => {
-    const legs = directionsParser(makeResponse([makeRoute({ 1: [[LEG_SUMMARY, "bad"]] })]))[0]?.legs;
+  it("returns no legs when the leg list is not an array", () => {
+    const legs = directionsParser(makeResponse([makeRoute({ 1: "bad" })]))[0]?.legs;
     expect(legs).toEqual([]);
   });
 });

@@ -40,16 +40,16 @@ export function contractViolations(data: unknown): string[] {
 
     // Some routes (e.g. transit) expose a different leg shape; the parser treats
     // a non-array steps node as an empty step list, so it is not a violation.
-    // A route with waypoints stores one segment per stopover, each with its own
-    // leg list, so every segment is checked.
-    const segments = getPath(route, [1]);
-    if (!Array.isArray(segments)) return;
+    // A route stores one leg per waypoint interval, and each leg's steps are an
+    // array of groups whose `[1]` holds the actual step messages.
+    const legs = getPath(route, [1]);
+    if (!Array.isArray(legs)) return;
 
-    for (const segment of segments) {
-      const legs = getPath(segment, [1]);
-      if (!Array.isArray(legs)) continue;
-      for (const leg of legs) {
-        const steps = getPath(leg, [1]);
+    for (const leg of legs) {
+      const groups = getPath(leg, [1]);
+      if (!Array.isArray(groups)) continue;
+      for (const group of groups) {
+        const steps = getPath(group, [1]);
         if (!Array.isArray(steps)) continue;
         for (const step of steps) {
           const html = getPath(step, [0, 1]);
