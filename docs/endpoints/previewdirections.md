@@ -76,6 +76,24 @@ The `<mode>` value is the internal travel-mode enum, which matches the mode code
 
 Without this message the endpoint returns its default set of driving routes (sometimes with an alternative mode), so set it explicitly for predictable results. Transit (1) and taxi (4) are not available in all regions.
 
+## Departure and arrival time
+
+The endpoint plans from "now" unless a time is selected. When the Maps web client has a departure or an arrival set it adds a `19m3` message to the `6m` feature block:
+
+```
+!19m3!1e<mode>!2e2!3j<unix-seconds>
+```
+
+- `1e0` - depart at, `1e1` - arrive by.
+- `3j` - the timestamp in true Unix seconds.
+- The message is a direct child of `6m`, whose `m` count grows by four (the `19m3` token plus its three children).
+
+Without a travel mode the block is `!6m4!19m3!1e0!2e2!3j<seconds>`; with one they share the block, e.g. `!6m11!19m3!1e0!2e2!3j<seconds>!20m6!1e0!2e3!5e2!6b1!8b1!14b1`.
+
+This module sets it through the `departure_time` and `arrival_time` options (see [Arguments](../../ReadMe.md#arguments)). The full endpoint comparison is in the [timing map](timing.md).
+
+> The `data=` URL format uses different fields for the same idea (`6e` / `7e2` / `8j`). Those are ignored here: the `preview` endpoint reads `19m3`, not the `data=` fields.
+
 ## Geometry
 
 Unlike the public Routes API, this endpoint does **not** return an encoded polyline. The route line is delivered to the browser as vector tiles (`/maps/vt/stream/...2sdirections...`), which use an opaque compressed format.
@@ -96,18 +114,22 @@ Top-level layout:
 Route layout (`data[0][1][i]`):
 
 - `[0]` - summary block: `[code, summary_text, [meters, "text"], [seconds, "text"], ..., traffic]`
-- `[1][0][1]` - array of legs
+- `[1]` - array of legs (one per waypoint interval: 1 for a direct trip, 2 for one stop)
 - `[5]` - route tracking id
 
-Leg layout:
+Leg layout (`data[0][1][i][1][j]`):
 
-- `[0]` - summary block (distance at `[2]`, duration at `[3]`)
-- `[1]` - array of steps
+- `[0]` - summary block (distance at `[2]`, duration at `[3]`, an optional traffic block at `[10]`)
+- `[1]` - array of step groups; each group's `[1]` holds the navigable steps
 
-Step layout:
+Step layout (a group's step, e.g. `data[0][1][i][1][j][1][k]`):
 
 - `[0][1]` - HTML instructions, e.g. `<step maneuver='DEPART' meters='136'>Head toward ...</step>`
 - `[0][2]` - distance block `[meters, "text", flag]`
 - `[0][3]` - duration block `[seconds, "text"]`
+
+The per-leg duration is the time between waypoints. No departure or arrival
+clock time is returned for driving; chain the leg durations from a known start
+to derive them. See the [timing map](timing.md) for the full picture.
 
 [^1]: Non-ASCII characters and spaces are percent-encoded by the client when the URL is assembled. A literal `!` in a user query is replaced with a space because it would otherwise be parsed as a field delimiter.
