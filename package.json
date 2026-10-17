@@ -1,6 +1,6 @@
 {
   "name": "google-maps-compute-routes",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A routes scraper made for Google Maps",
   "keywords": [
     "google-maps",
