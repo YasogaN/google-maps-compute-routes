@@ -70,8 +70,9 @@ The `<mode>` value is the internal travel-mode enum, which matches the mode code
 | Value | Mode |
 | ----- | ---- |
 | 0 | driving |
+| 1 | bicycling |
 | 2 | walking |
-| 3 | bicycling |
+| 3 | transit (not exposed by this module) |
 | 9 | two-wheeler |
 
 Without this message the endpoint returns its default set of driving routes (sometimes with an alternative mode), so set it explicitly for predictable results. Transit (1) and taxi (4) are not available in all regions.

@@ -14,13 +14,14 @@ export interface DirectionsUrl {
 /**
  * Internal travel-mode enum used in the `pb` options message.
  *
- * These values match the mode codes the endpoint returns on each route, which
- * differ from the public Routes API enum.
+ * These values match the mode code the endpoint returns on each route, which
+ * differ from the public Routes API enum: `1` is bicycling and `3` is transit
+ * (not exposed here), confirmed against the live endpoint.
  */
 export const TRAVEL_MODE_VALUES: Record<TravelMode, number> = {
     driving: 0,
+    bicycling: 1,
     walking: 2,
-    bicycling: 3,
     two_wheeler: 9,
 };
 
