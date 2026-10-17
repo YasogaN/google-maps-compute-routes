@@ -87,6 +87,21 @@ describe("computeRouteMatrix", () => {
     expect(calledUrl).toContain("1e9");
   });
 
+  it("applies the departure time to every request", async () => {
+    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    await compute({ origins: ["O"], destinations: ["D"], departure_time: 1800000000 });
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("19m3!1e0!2e2!3j1800000000");
+  });
+
+  it("rejects an invalid departure time", async () => {
+    await expect(
+      compute({ origins: ["O"], destinations: ["D"], departure_time: new Date("nope") }),
+    ).rejects.toThrow(/Invalid departure_time/);
+  });
+
   it("falls back to the static duration when no live traffic is reported", async () => {
     const noTraffic = makeRoute({ 0: [9, "Main St", [100, "100 m"], [50, "1 min"]] });
     mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([noTraffic]))));

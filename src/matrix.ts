@@ -2,7 +2,7 @@ import type { Impit } from "impit";
 import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
 import { RateLimiter } from "./rateLimiter.js";
-import { fetchRoutes, toRouteLocation } from "./utils.js";
+import { fetchRoutes, toRouteLocation, toUnixSeconds } from "./utils.js";
 import { warmUp } from "./warmup.js";
 import type {
     ComputeRouteMatrixOptions,
@@ -26,6 +26,7 @@ interface ComputeElementParams {
     originIndex: number;
     destinationIndex: number;
     travelMode: TravelMode | undefined;
+    departureTime: number | undefined;
     language: string;
     region: string;
     client: Impit;
@@ -66,13 +67,14 @@ async function computeElement({
     originIndex,
     destinationIndex,
     travelMode,
+    departureTime,
     language,
     region,
     client,
     limiter,
 }: ComputeElementParams): Promise<MatrixElement> {
     try {
-        const data = await fetchRoutes({ origin, destination, waypoints: [], travelMode, language, region, client, limiter });
+        const data = await fetchRoutes({ origin, destination, waypoints: [], travelMode, departureTime, language, region, client, limiter });
         const route = directionsParser(data)[0];
         if (!route) return errorElement(originIndex, destinationIndex);
         return {
@@ -102,6 +104,7 @@ async function computeElement({
  * @param options.origins      - Origin queries or locations (rows).
  * @param options.destinations - Destination queries or locations (columns).
  * @param options.travel_mode  - Travel mode; `two_wheeler` is billed at the Enterprise tier.
+ * @param options.departure_time - Departure time (`Date` or Unix seconds) to plan every pair for.
  * @param options.language     - Response language (`hl`), defaults to `en`.
  * @param options.region       - Region bias (`gl`), defaults to `us`.
  * @param options.concurrency  - Maximum in-flight requests, defaults to `8`.
@@ -115,6 +118,7 @@ export async function computeRouteMatrix({
     origins,
     destinations,
     travel_mode,
+    departure_time,
     language = "en",
     region = "us",
     concurrency = DEFAULT_CONCURRENCY,
@@ -133,6 +137,8 @@ export async function computeRouteMatrix({
     if (!Number.isInteger(concurrency) || concurrency < 1) {
         throw new Error(`Invalid concurrency: ${concurrency}`);
     }
+
+    const departureTime = departure_time !== undefined ? toUnixSeconds(departure_time, "departure_time") : undefined;
 
     const originLocations = origins.map(toRouteLocation);
     const destinationLocations = destinations.map(toRouteLocation);
@@ -167,6 +173,7 @@ export async function computeRouteMatrix({
                 originIndex,
                 destinationIndex,
                 travelMode: travel_mode,
+                departureTime,
                 language,
                 region,
                 client,

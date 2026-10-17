@@ -112,6 +112,7 @@ export interface ComputeRouteMatrixOptions {
     origins: Array<string | RouteLocation>;
     destinations: Array<string | RouteLocation>;
     travel_mode?: TravelMode;
+    departure_time?: Date | number;
     language?: string;
     region?: string;
     concurrency?: number;
