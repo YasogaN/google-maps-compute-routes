@@ -146,14 +146,23 @@ describe("directionsParser", () => {
   });
 
   function routeWithDestination(destination: unknown): unknown[] {
-    const summary = [
-      9, "Main St", [1200, "1.2 km", 0], [300, "5 min"], null, null, null,
-      [null, null, null, [null, null, destination, [null, null, 6.9, 79.9]]], null, null, null,
+    const detail = [
+      9,
+      "<step maneuver='X'>Go</step>",
+      [1, "1 m", 0],
+      [1, "1 sec"],
+      null,
+      null,
+      null,
+      [
+        [[1000, 79.9, 6.9], [0, 0, 0], [1024, 768], 13.1],
+        [[null, null, 6.9, 79.9], destination],
+      ],
     ];
-    return makeRoute({ 0: summary });
+    return makeRoute({ 1: [[LEG_SUMMARY, [[detail]], null, null, []]] });
   }
 
-  it("reads a destination in plain [lat, lng] form", () => {
+  it("reads the destination from the last step's end coordinate", () => {
     const [route] = directionsParser(makeResponse([routeWithDestination([6.8, 79.8])]));
     expect(route?.overview_path.at(-1)).toEqual({ latitude: 6.8, longitude: 79.8 });
   });

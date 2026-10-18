@@ -78,6 +78,31 @@ function parseStep(step: unknown): ParsedStep | null {
 }
 
 /**
+ * Find where the route ends: the end location of its last step.
+ *
+ * The route summary's `[7][3]` is the route's bounding box (south-west and
+ * north-east corners), not the destination, so the end is read from the final
+ * step's viewport instead.
+ *
+ * @param route The raw route array.
+ * @returns The end coordinate, or `null` when no step carries one.
+ */
+function lastStepEnd(route: unknown): Coordinates | null {
+    let end: Coordinates | null = null;
+    function walk(node: unknown): void {
+        if (!Array.isArray(node)) return;
+        const detail = node[0];
+        if (Array.isArray(detail) && typeof detail[1] === "string" && detail[1].startsWith("<step")) {
+            const coordinates = parseCoordinates(getPath(detail, [7, 1, 1]));
+            if (coordinates) end = coordinates;
+        }
+        for (const child of node) walk(child);
+    }
+    walk(route);
+    return end;
+}
+
+/**
  * Collect the navigable steps of a leg.
  *
  * A leg stores its steps as an array of groups, and a group's `[1]` holds the
@@ -173,7 +198,7 @@ function parseRoute(route: unknown): ParsedRoute | null {
             if (step.start_location) overviewPath.push(step.start_location);
         }
     }
-    const destination = parseCoordinates(getPath(route, [0, 7, 3, 2]));
+    const destination = lastStepEnd(route);
     if (destination) overviewPath.push(destination);
 
     return {

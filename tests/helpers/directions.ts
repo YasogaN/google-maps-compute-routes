@@ -15,7 +15,10 @@ export function makeStep(overrides: Record<number, unknown> = {}): unknown[] {
     null,
     null,
     null,
-    [[[1000, 79.9, 6.9], [0, 0, 0], [1024, 768], 13.1]],
+    [
+      [[1000, 79.9, 6.9], [0, 0, 0], [1024, 768], 13.1],
+      [[null, null, 6.9, 79.9], [null, null, 6.8, 79.8]],
+    ],
   ];
   apply(detail, overrides);
   return [detail];

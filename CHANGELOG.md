@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Routed trips (intermediate `waypoints`, including a chunked `polyline`) now return a traffic-aware duration per leg. The request was missing the web client's traffic-aware routing block (`2m4!5m1!6e2!20e3!39b1`), so with waypoints every leg's traffic block was empty and a chosen departure time did not affect the legs
 - `travel_mode: "bicycling"` sent the transit enum (`3`) instead of the cycling enum (`1`), so a bicycle request was routed as transit
+- `overview_path` was ended with the route summary's `[7][3][2]`, which is the south-west corner of the route's bounding box, not the destination; it now ends at the last step's end coordinate
 
 ## [1.2.1] - 2026-10-18
 
