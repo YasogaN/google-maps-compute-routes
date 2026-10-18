@@ -56,7 +56,7 @@ Intermediate stopovers are encoded as additional top-level `1m<N>` waypoint mess
 !<origin>!<waypoint 1>!<waypoint 2>!<destination>
 ```
 
-Every stopover splits the route into its own leg. Up to 100 top-level points are accepted per request (99 legs); 101 returns HTTP 500. Before that the public Routes API's documented limit of 25 intermediate waypoints does not apply to this endpoint, but this module chunks a polyline at 100 points to stay under it.
+Every stopover splits the route into its own leg. Up to 100 top-level points are accepted per request (99 legs); 101 returns HTTP 500. Those points are the origin, the destination and the intermediates, so a plain request carries at most 98 waypoints (`MAX_INTERMEDIATE_WAYPOINTS`), and a polyline is chunked at 100 points. The public Routes API's documented limit of 25 intermediate waypoints is a Pro billing trigger on the keyed API, not a limit on this endpoint.
 
 ## Via points
 

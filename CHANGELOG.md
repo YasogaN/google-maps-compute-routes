@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+
+- `MAX_INTERMEDIATE_WAYPOINTS` raised from 25 to 98. The endpoint accepts 100 top-level points per request, and those are the origin, the destination and the intermediates, so 98 is what fits; the 25 was the public Routes API's documented limit, which is a Pro billing trigger on the keyed API rather than a limit on this keyless one
+
 ### Documentation
 
 - Folded `docs/endpoints/timing.md` into `docs/endpoints/previewdirections.md` (departure/arrival, via points, geometry, polyline chunking and snap, per-leg timing) and repointed the links

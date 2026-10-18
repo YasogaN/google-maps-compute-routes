@@ -4,9 +4,15 @@ import { decodePolyline } from "./polyline.js";
 import type { Coordinates, FetchRoutesParams, JsonArray, RouteLocation, Validate } from "./types.js";
 
 /**
- * Maximum number of intermediate waypoints the Routes API allows per request.
+ * Maximum number of intermediate waypoints this endpoint allows per request.
+ *
+ * The endpoint accepts at most 100 top-level points per request (99 legs), and
+ * those points are the origin, the destination and the intermediate waypoints —
+ * so 98 intermediates is the most that fits alongside both ends. The public
+ * Routes API's documented limit of 25 intermediates does not apply here; it is
+ * a Pro billing trigger on the keyed API, not a limit on this one.
  */
-export const MAX_INTERMEDIATE_WAYPOINTS = 25;
+export const MAX_INTERMEDIATE_WAYPOINTS = 98;
 
 /**
  * Validate the scraper input, throwing on invalid values.
