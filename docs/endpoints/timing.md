@@ -121,6 +121,18 @@ Every point is a **stopover**: Google routes to it and leaves it. The endpoint h
 
 The lesson: do not trace a polyline point-by-point. Simplify with a tolerance and cap the gap so control points are a few hundred metres apart at least. The `simplify` / `max_gap` options do this, but the defaults (10 m / 100 m) keep too many points for an accurate ETA — raise `max_gap` (500 m, say) when the duration matters.
 
+### Via points (pass-through)
+
+Dragging a route in the Maps web client adds top-level field-9 messages, not stopovers:
+
+```
+!9m6!1i0!2m2!3d<lat>!4d<lng>!3s<featureId>!4f<float>
+```
+
+They are pass-through: a request with vias comes back as one leg, while the same points as field-1 stopovers come back as one leg each. They do **not** avoid the stopover cost above — measured on the same on-road line, vias and stopovers return the same distance (dense ~1.9x, ~130 m ~1.12x). So a via does not make dense tracing accurate; the density is what matters either way.
+
+The route's real geometry is also available: with the full web-client `pb`, `data[0][7][i]` holds the route line as delta-encoded E7 coordinate arrays (latitude deltas, longitude deltas, first element absolute), index-aligned with the routes. The minimal request this module sends does not get it (`data[0][7]` is null), so `overview_path` is approximated from the step viewports instead.
+
 ## What the keyed APIs add
 
 The keyless endpoint always routes between two points for a chosen time. The
