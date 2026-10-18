@@ -47,7 +47,7 @@ const routes = await computeRoutes({
 });
 ```
 
-You can also pass a Google Maps directions URL instead of the waypoints:
+You can also pass a Google Maps directions URL instead of `origin` and `destination`:
 
 ```ts
 const routes = await computeRoutes({
@@ -151,8 +151,8 @@ const routes = await computeRoutes({
   departure_time: new Date("2026-10-19T12:00:00+05:30"),
   clean: true,
 });
-// routes[0].legs is one leg per waypoint; each leg.duration is the
-// traffic-aware time between its two waypoints
+// routes[0].legs is one leg per waypoint; each leg.duration_in_traffic is
+// the traffic-aware time between its two waypoints
 ```
 
 See the [endpoint page](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/previewdirections.md#departure-and-arrival-time) for the request field and how per-waypoint timing works.
