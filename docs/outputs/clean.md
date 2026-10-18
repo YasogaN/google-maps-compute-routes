@@ -52,6 +52,8 @@ The above format is self-explanatory. `duration_in_traffic` and `duration_range`
 
 `legs` holds one entry per waypoint interval: a direct trip has one leg, and each intermediate waypoint adds one. A leg's `duration` (and `duration_in_traffic`, when Google supplies it) is the time between its two waypoints. The endpoint returns no departure or arrival clock times for driving, so derive them by chaining the leg durations from a known departure — see the [timing map](../endpoints/timing.md).
 
+For a `polyline` route, `legs[].departure` / `legs[].arrival` carry the chained clock time of each leg, and `waypoints` lists the simplified control points with the same times (the dense input line is in `overview_path`). A non-polyline route returns `waypoints: []` and null leg times.
+
 `overview_path` is an approximate path derived from the step boundaries: one coordinate per step (its `start_location`) followed by the destination. It is a simplified skeleton, not a dense encoded polyline, because the endpoint does not return one. When `waypoints` are supplied each stopover adds an extra leg and its own steps to the path.
 
 # Reporting Issues

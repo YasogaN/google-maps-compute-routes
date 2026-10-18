@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - `departure_time` and `arrival_time` options on `computeRoutes()` (`Date` or Unix seconds, mutually exclusive) that plan the trip for a chosen time. The endpoint returns the traffic-aware duration for that time instead of "now"
 - `departure_time` on `computeRouteMatrix()`, applied to every origin/destination pair
+- `computeRoutes()` now routes a `polyline` of any length: it is simplified (Douglas-Peucker) and its long segments subdivided, split into chunks of at most 100 points and routed in order, returning one merged route. A departure is chained forward by the running leg totals; an arrival deadline is chained backward then refined with one forward pass
+- `simplify`, `max_gap` and `max_points_per_request` options for polyline chunking
+- `ParsedRoute.waypoints` (timed control points) and `ParsedLeg.departure` / `ParsedLeg.arrival` (Unix seconds plus ISO 8601 text)
 
 ### Fixed
 

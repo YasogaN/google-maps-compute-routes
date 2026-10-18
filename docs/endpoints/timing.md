@@ -107,6 +107,20 @@ the departure time. With the block, each leg carries its own traffic-aware
 duration, computed for the time the vehicle reaches that leg, so chaining the
 legs from the departure gives a traffic-aware arrival at each waypoint.
 
+## Tracing a polyline: chunking and the stopover cost
+
+A polyline is sent as repeated waypoint messages, so it is chunked at 100 points per request (the endpoint accepts 100, not the public API's 25). With a departure set, each chunk's departure is the user's departure plus the summed leg durations of every earlier chunk, so the clock advances across chunk boundaries. An arrival deadline is chained backward from the requested arrival and then refined with one forward pass; the final arrival can drift slightly from the requested one.
+
+Every point is a **stopover**: Google routes to it and leaves it. The endpoint has no pass-through ("via") marker — the waypoint enum `6e0`/`6e1`/`6e2` all behave the same — so densely sampled points add detour distance and time. Measured against a real on-road line (OSRM geometry) traced back through the endpoint:
+
+| Waypoint spacing | Traced distance vs the on-road line |
+| ---------------- | ----------------------------------- |
+| ~25 m (US / Sri Lanka) | 1.86x / 3.4x |
+| ~250–300 m | 1.12x / 2.1x |
+| ~925 m | 1.01x |
+
+The lesson: do not trace a polyline point-by-point. Simplify with a tolerance and cap the gap so control points are a few hundred metres apart at least. The `simplify` / `max_gap` options do this, but the defaults (10 m / 100 m) keep too many points for an accurate ETA — raise `max_gap` (500 m, say) when the duration matters.
+
 ## What the keyed APIs add
 
 The keyless endpoint always routes between two points for a chosen time. The

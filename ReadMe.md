@@ -87,9 +87,20 @@ const routes = await computeRoutes({ polyline, region: "lk", clean: true });
 // routes[0].duration_in_traffic -> live ETA for the path
 ```
 
-> The endpoint has no native "route along this polyline" mode, so the points are
-> sent as stopovers and Google snaps them to the road network. Feed a reasonably
-> dense (but simplified) path for accurate results.
+A long polyline is simplified (Douglas-Peucker) and its remaining long segments subdivided, split into request-sized chunks and routed in order, returning one merged route. `overview_path` is the dense input; `waypoints` is the timed control points; each leg's `departure`/`arrival` chains from the `departure_time` (or, for `arrival_time`, backward then one refinement pass).
+
+```ts
+const routes = await computeRoutes({
+  polyline,                       // may be longer than the 100-point request limit
+  departure_time: new Date(),     // chained across chunks
+  simplify: 10,                   // DP tolerance in metres (default 10)
+  max_gap: 500,                   // longest segment after subdivision, default 100
+  clean: true,
+});
+// routes[0].waypoints[i].arrival -> time the route reaches each control point
+```
+
+> Every point is a **stopover** and the endpoint has no pass-through ("via") mode, so densely sampled points inflate the route (measured: ~25 m spacing → up to ~1.9–3.4x distance; ~250–500 m → ~1.1x). Do not sample every 25 m — keep control points a few hundred metres apart (`max_gap`), or the ETA will be wrong.
 
 ### Compute a route matrix
 
@@ -169,6 +180,12 @@ All arguments are passed as a single object:
 `departure_time` - `Date | number`: Departure time to plan for, as a `Date` or Unix seconds. When omitted the route is planned from now. Mutually exclusive with `arrival_time`.
 
 `arrival_time` - `Date | number`: Arrival time to plan for, as a `Date` or Unix seconds. Mutually exclusive with `departure_time`.
+
+`simplify` - `number`: Polyline Douglas-Peucker tolerance in metres. Defaults to `10`; `0` disables simplification.
+
+`max_gap` - `number`: Longest segment after subdividing a simplified polyline, in metres. Defaults to `100`; `0` disables subdivision. Raise it (e.g. `500`) when tracing a polyline so the stopovers are sparse enough not to inflate the route.
+
+`max_points_per_request` - `number`: Points per request when a polyline is chunked. Defaults to `100` (the endpoint accepts 99 legs); the minimum is `2`.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 
