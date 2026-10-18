@@ -69,11 +69,17 @@ export function makeRoute(overrides: Record<number, unknown> = {}): unknown[] {
   return route;
 }
 
-/** Build a full parsed directions response wrapping the given routes. */
-export function makeResponse(routes: unknown[]): unknown[] {
+/**
+ * Build a full parsed directions response wrapping the given routes.
+ *
+ * `geometry`, when supplied, is the route-line node at `data[0][7]`: one entry
+ * per route, each two parallel arrays of E7 deltas (latitudes then longitudes).
+ */
+export function makeResponse(routes: unknown[], geometry?: unknown): unknown[] {
   const data: unknown[] = [];
   data[0] = [];
   (data[0] as unknown[])[1] = routes;
+  if (geometry !== undefined) (data[0] as unknown[])[7] = geometry;
   return data;
 }
 

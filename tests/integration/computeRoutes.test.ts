@@ -110,6 +110,30 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(calledUrl).toContain("1sD");
   });
 
+  it("requests the geometry flag and returns the route line when geometry is true", async () => {
+    const geometry = [[[1000, 1000], [1000, 1000]]];
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()], geometry))));
+
+    const routes = (await compute({ origin: "A", destination: "B", waypoints: ["C"], geometry: true, clean: true })) as ParsedRoute[];
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).toContain("14b1");
+    expect(routes[0]!.geometry).toEqual([
+      { latitude: 0.0001, longitude: 0.0001 },
+      { latitude: 0.0002, longitude: 0.0002 },
+    ]);
+  });
+
+  it("omits the geometry flag and returns null geometry when geometry is not requested", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    const routes = (await compute({ origin: "A", destination: "B", waypoints: ["C"], clean: true })) as ParsedRoute[];
+
+    const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
+    expect(calledUrl).not.toContain("14b1");
+    expect(routes[0]!.geometry).toBeNull();
+  });
+
   it("builds a route from an encoded polyline", async () => {
     mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
 
@@ -170,6 +194,23 @@ describe("computeRoutes pipeline (integration)", () => {
     });
 
     // one geometry pass, then one timing pass, and the request asks for geometry
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(decodeURIComponent(mockFetch.mock.calls[0]![0] as string)).toContain("14b1");
+  });
+
+  it("ignores geometry on the polyline path, which requests the flag itself", async () => {
+    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    await compute({
+      polyline: [
+        { latitude: 6.9, longitude: 79.9 },
+        { latitude: 6.92, longitude: 79.92 },
+      ],
+      geometry: false,
+      clean: true,
+    });
+
+    // The snap pass still asks for the route line even though the caller said false.
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(decodeURIComponent(mockFetch.mock.calls[0]![0] as string)).toContain("14b1");
   });
