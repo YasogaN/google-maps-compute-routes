@@ -171,7 +171,7 @@ All arguments are passed as a single object:
 
 `destination` - `string | RouteLocation`: Ending point, either a free-text query or a structured location.
 
-`waypoints` - `Array<string | RouteLocation>`: Optional intermediate stopover points. Each one splits the route into an additional leg. Defaults to `[]`.
+`waypoints` - `Array<string | RouteLocation>`: Optional intermediate stopover points. Each one splits the route into an additional leg. Defaults to `[]`. At most **98** are accepted (the endpoint allows 100 top-level points per request, counting the origin and destination); the limit is exported as `MAX_INTERMEDIATE_WAYPOINTS`.
 
 `polyline` - `string | Coordinates[]`: Optional encoded polyline or coordinate path. When given it takes precedence over `url`, `origin`, `destination` and `waypoints`, and the traffic-aware ETA for that path is returned.
 
