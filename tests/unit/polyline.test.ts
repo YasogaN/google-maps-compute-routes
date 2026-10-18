@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodePolyline, encodePolyline, metersBetween, simplifyPolyline, subdividePolyline } from "../../src/polyline.js";
+import { decodePolyline, decimateByDistance, encodePolyline, metersBetween, simplifyPolyline, subdividePolyline } from "../../src/polyline.js";
 
 describe("decodePolyline", () => {
   it("decodes the reference example", () => {
@@ -138,5 +138,28 @@ describe("subdividePolyline", () => {
     ];
     const subdivided = subdividePolyline(corner, 100);
     for (const point of corner) expect(subdivided).toContainEqual(point);
+  });
+});
+
+describe("decimateByDistance", () => {
+  const line = [0, 0.001, 0.002, 0.003].map((latitude) => ({ latitude, longitude: 0 }));
+
+  it("returns a copy for two points or fewer", () => {
+    const two = line.slice(0, 2);
+    const kept = decimateByDistance(two, 100);
+    expect(kept).toEqual(two);
+    expect(kept).not.toBe(two);
+  });
+
+  it("returns a copy when the spacing is zero", () => {
+    expect(decimateByDistance(line, 0)).toEqual(line);
+  });
+
+  it("keeps points at least the spacing apart", () => {
+    expect(decimateByDistance(line, 150).map((point) => point.latitude)).toEqual([0, 0.002, 0.003]);
+  });
+
+  it("always keeps the last point", () => {
+    expect(decimateByDistance(line, 1000).map((point) => point.latitude)).toEqual([0, 0.003]);
   });
 });

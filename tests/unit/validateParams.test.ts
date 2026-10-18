@@ -126,6 +126,12 @@ describe("validateParams", () => {
       validateParams({ url: undefined, origin: "A", destination: "B", max_points_per_request: 1, clean: false }),
     ).toThrow(/Invalid max_points_per_request/);
   });
+
+  it("rejects an invalid snap_gap", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: "A", destination: "B", snap_gap: -1, clean: false }),
+    ).toThrow(/Invalid snap_gap/);
+  });
 });
 
 describe("toUnixSeconds", () => {

@@ -168,6 +168,28 @@ export function simplifyPolyline(coordinates: Coordinates[], toleranceMeters: nu
 }
 
 /**
+ * Keep points at least `minMeters` apart along a path.
+ *
+ * Used to thin a path to a few hundred metres between control points before a
+ * routing request: every control point is a stopover, so a very dense one makes
+ * Google detour. The first and last points are always kept.
+ *
+ * @param coordinates The path to thin (not mutated).
+ * @param minMeters   Minimum distance between kept points, in metres. Zero or less keeps everything.
+ * @returns The thinned coordinates (a new array).
+ */
+export function decimateByDistance(coordinates: Coordinates[], minMeters: number): Coordinates[] {
+    if (coordinates.length <= 2 || minMeters <= 0) return coordinates.slice();
+
+    const kept: Coordinates[] = [coordinates[0]!];
+    for (let index = 1; index < coordinates.length; index++) {
+        const isLast = index === coordinates.length - 1;
+        if (isLast || metersBetween(kept.at(-1)!, coordinates[index]!) >= minMeters) kept.push(coordinates[index]!);
+    }
+    return kept;
+}
+
+/**
  * Insert interpolated points so no segment is longer than `maxSegmentMeters`.
  *
  * A simplified path only pins the route at its control points; Google picks the

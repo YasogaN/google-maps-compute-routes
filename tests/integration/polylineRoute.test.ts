@@ -5,7 +5,7 @@ import { RateLimiter } from "../../src/rateLimiter.js";
 import type { Coordinates } from "../../src/types.js";
 
 /** A response with `legCount` legs, each `seconds` long and `meters` long. */
-function legResponse(legCount: number, seconds = 60, meters = 100, withTraffic = true): unknown {
+function legResponse(legCount: number, seconds = 60, meters = 100, withTraffic = true, withGeometry = false): unknown {
   const summary = [9, "test", [meters * legCount, "x", 0], [seconds * legCount, "x"], null, null, null, null, null, null, []];
   const route: unknown[] = [];
   route[0] = summary;
@@ -14,7 +14,19 @@ function legResponse(legCount: number, seconds = 60, meters = 100, withTraffic =
     [],
   ]);
   route[5] = "route-id";
-  return makeResponse([route]);
+  const data = makeResponse([route]) as unknown[];
+  if (withGeometry) {
+    // Four points at ~0.00001 deg steps, as E7 deltas.
+    (data[0] as unknown[])[7] = [[[69000000, 100000, 100000, 100000], [799000000, 100000, 100000, 100000]]];
+  }
+  return data;
+}
+
+/** A response with a route line and a single leg. */
+function geometryResponse(geometry: unknown): unknown {
+  const data = legResponse(1, 60, 100, true, true) as unknown[];
+  (data[0] as unknown[])[7] = [geometry];
+  return data;
 }
 
 function clientOf(...responses: unknown[]): { fetch: ReturnType<typeof vi.fn> } {
@@ -33,6 +45,8 @@ const BASE = {
   simplify: 0,
   maxGap: 0,
   maxPointsPerRequest: 2,
+  snap: false,
+  snapGap: 500,
   language: "en",
   region: "us",
 } as const;
@@ -260,5 +274,63 @@ describe("computePolylineRoute", () => {
     });
 
     expect(route.waypoints).toHaveLength(3);
+  });
+
+  it("times Google's own geometry when snap is on", async () => {
+    // one geometry-pass request, then one timing-pass request
+    const client = clientOf(legResponse(2, 60, 100, true, true), legResponse(3, 60, 100));
+    const route = await computePolylineRoute({
+      ...BASE,
+      snap: true,
+      maxPointsPerRequest: 100,
+      points: points(3),
+      departureTime: START,
+      client: client as never,
+      limiter: new RateLimiter(1000),
+    });
+
+    expect(client.fetch).toHaveBeenCalledTimes(2);
+    expect(route.geometry).toHaveLength(4);
+    expect(route.waypoints).toHaveLength(4);
+    expect(route.legs).toHaveLength(3);
+  });
+
+  it("falls back to the control points when no geometry comes back", async () => {
+    const client = clientOf(legResponse(2, 60, 100), legResponse(2, 60, 100));
+    const route = await computePolylineRoute({
+      ...BASE,
+      snap: true,
+      maxPointsPerRequest: 100,
+      points: points(3),
+      departureTime: START,
+      client: client as never,
+      limiter: new RateLimiter(1000),
+    });
+
+    expect(route.geometry).toBeNull();
+    expect(route.waypoints).toHaveLength(3);
+    expect(route.legs).toHaveLength(2);
+  });
+
+  it("dedupes the geometry line", async () => {
+    // (6.9,79.9), a duplicate of it, then (6.9,79.91): exercises the equal
+    // latitude and the duplicate branches.
+    const geometry = [
+      [69000000, 0, 0],
+      [799000000, 0, 100000],
+    ];
+    const client = clientOf(geometryResponse(geometry), legResponse(2, 60, 100));
+    const route = await computePolylineRoute({
+      ...BASE,
+      snap: true,
+      maxPointsPerRequest: 100,
+      points: points(2),
+      departureTime: START,
+      client: client as never,
+      limiter: new RateLimiter(1000),
+    });
+
+    expect(route.geometry).toHaveLength(2);
+    expect(route.waypoints).toHaveLength(2);
   });
 });

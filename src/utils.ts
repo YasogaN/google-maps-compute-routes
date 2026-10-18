@@ -26,7 +26,7 @@ export const MAX_INTERMEDIATE_WAYPOINTS = 25;
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, simplify, max_gap, max_points_per_request, clean }: Validate) {
+export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, simplify, max_gap, max_points_per_request, snap_gap, clean }: Validate) {
   if (polyline !== undefined) {
     // The path comes from the polyline, so no URL or waypoints are required.
   } else if (url !== undefined) {
@@ -74,6 +74,9 @@ export function validateParams({ url, origin, destination, waypoints, polyline, 
   }
   if (max_points_per_request !== undefined && (!Number.isInteger(max_points_per_request) || max_points_per_request < 2)) {
     throw new Error(`Invalid max_points_per_request: ${max_points_per_request}`);
+  }
+  if (snap_gap !== undefined && (!Number.isFinite(snap_gap) || snap_gap < 0)) {
+    throw new Error(`Invalid snap_gap: ${snap_gap}`);
   }
 
   if (typeof clean !== "boolean") {
@@ -167,8 +170,8 @@ export function parseDirectionsUrl(url: string): { origin: string; destination: 
  * @returns The raw JSON array response.
  * @throws {Error} On fetch failure or invalid response format.
  */
-export async function fetchRoutes({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
-  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, language, region });
+export async function fetchRoutes({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, geometry, language, region, client, limiter }: FetchRoutesParams): Promise<JsonArray> {
+  const apiUrl = getDirectionsUrl({ origin, destination, waypoints, travelMode, departureTime, arrivalTime, geometry, language, region });
   const referer = buildReferer(origin, waypoints, destination);
   await limiter.acquire();
   const response = await client.fetch(apiUrl, { headers: fetchHeaders(referer) });

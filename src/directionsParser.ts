@@ -177,13 +177,39 @@ function parseLegs(route: unknown): ParsedLeg[] {
 }
 
 /**
- * Parse a single route, including its legs, traffic-aware durations and the
- * approximate overview path.
+ * Decode the route line at `data[0][7][i]`.
  *
- * @param route The raw route array.
+ * It is two parallel arrays of E7 deltas (latitude, then longitude) whose first
+ * element is absolute, so the coordinates are the running sums.
+ *
+ * @param node The raw geometry node.
+ * @returns The decoded coordinates, or `null` when the node is malformed.
+ */
+function parseGeometry(node: unknown): Coordinates[] | null {
+    const latitudes = getPath(node, [0]);
+    const longitudes = getPath(node, [1]);
+    if (!Array.isArray(latitudes) || !Array.isArray(longitudes)) return null;
+    if (latitudes.length !== longitudes.length || latitudes.length < 2) return null;
+
+    let latitude = 0;
+    let longitude = 0;
+    const coordinates: Coordinates[] = [];
+    for (let index = 0; index < latitudes.length; index++) {
+        latitude += numberOrZero(latitudes[index]);
+        longitude += numberOrZero(longitudes[index]);
+        coordinates.push({ latitude: latitude / 1e7, longitude: longitude / 1e7 });
+    }
+    return coordinates;
+}
+
+/**
+ * Parse a single route, including its legs, traffic-aware durations and line.
+ *
+ * @param route        The raw route array.
+ * @param geometryNode The route's line at `data[0][7][i]`, when requested.
  * @returns The parsed route, or `null` when the entry is malformed.
  */
-function parseRoute(route: unknown): ParsedRoute | null {
+function parseRoute(route: unknown, geometryNode?: unknown): ParsedRoute | null {
     const summary = getPath(route, [0]);
     if (!Array.isArray(summary)) return null;
 
@@ -191,15 +217,23 @@ function parseRoute(route: unknown): ParsedRoute | null {
     const range = Array.isArray(traffic) ? getPath(traffic, [4]) : undefined;
 
     const legs = parseLegs(route);
+    const geometry = parseGeometry(geometryNode);
 
-    const overviewPath: Coordinates[] = [];
-    for (const leg of legs) {
-        for (const step of leg.steps) {
-            if (step.start_location) overviewPath.push(step.start_location);
+    let overviewPath: Coordinates[];
+    if (geometry) {
+        overviewPath = geometry;
+    } else {
+        // No geometry requested: approximate the line from the step viewports
+        // plus the route's last step end.
+        overviewPath = [];
+        for (const leg of legs) {
+            for (const step of leg.steps) {
+                if (step.start_location) overviewPath.push(step.start_location);
+            }
         }
+        const destination = lastStepEnd(route);
+        if (destination) overviewPath.push(destination);
     }
-    const destination = lastStepEnd(route);
-    if (destination) overviewPath.push(destination);
 
     return {
         route_id: stringOrEmpty(getPath(route, [5])),
@@ -218,6 +252,7 @@ function parseRoute(route: unknown): ParsedRoute | null {
             : null,
         arrival: stringOrEmpty(getPath(route, [22, 8, 0, 0])) || null,
         overview_path: overviewPath,
+        geometry,
         waypoints: [],
         legs,
     };
@@ -232,5 +267,6 @@ function parseRoute(route: unknown): ParsedRoute | null {
 export default function directionsParser(data: unknown): ParsedRoute[] {
     const routes = getPath(data, [0, 1]);
     if (!Array.isArray(routes)) return [];
-    return routes.map(parseRoute).filter((r): r is ParsedRoute => r !== null);
+    const geometries = getPath(data, [0, 7]);
+    return routes.map((route, index) => parseRoute(route, getPath(geometries, [index]))).filter((r): r is ParsedRoute => r !== null);
 }

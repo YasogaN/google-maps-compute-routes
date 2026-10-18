@@ -25,6 +25,7 @@ describe("directionsParser", () => {
         { latitude: 6.9, longitude: 79.9 },
         { latitude: 6.8, longitude: 79.8 },
       ],
+      geometry: null,
       waypoints: [],
       legs: [
         {
@@ -51,6 +52,31 @@ describe("directionsParser", () => {
   it("returns an empty array for non-array input", () => {
     expect(directionsParser(null)).toEqual([]);
     expect(directionsParser("nope")).toEqual([]);
+  });
+
+  it("decodes the route geometry when present", () => {
+    const response = makeResponse([makeRoute()]) as unknown[];
+    (response[0] as unknown[])[7] = [[[69000000, 100000], [799000000, 100000]]];
+
+    const [route] = directionsParser(response);
+    expect(route?.geometry).toEqual([
+      { latitude: 6.9, longitude: 79.9 },
+      { latitude: 6.91, longitude: 79.91 },
+    ]);
+    expect(route?.overview_path).toEqual(route?.geometry);
+  });
+
+  it("ignores malformed route geometry", () => {
+    const cases: unknown[] = [
+      [["x", [1]]],
+      [[[1, 2], [3]]],
+      [[[1], [2]]],
+    ];
+    for (const geometry of cases) {
+      const response = makeResponse([makeRoute()]) as unknown[];
+      (response[0] as unknown[])[7] = geometry;
+      expect(directionsParser(response)[0]?.geometry).toBeNull();
+    }
   });
 
   it("returns an empty array when routes are missing", () => {

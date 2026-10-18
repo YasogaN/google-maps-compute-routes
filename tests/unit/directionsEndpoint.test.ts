@@ -61,6 +61,11 @@ describe("getDirectionsUrl", () => {
     expect(pbOf(url)?.endsWith("!6m5!2m4!5m1!6e2!20e3!39b1")).toBe(true);
   });
 
+  it("appends the geometry flag when requested", () => {
+    const url = getDirectionsUrl({ origin: { query: "A" }, destination: { query: "B" }, geometry: true });
+    expect(pbOf(url)).toBe(`!1m2!1sA!6e0!1m2!1sB!6e0!6m6!${TRAFFIC}!14b1`);
+  });
+
   it("appends the travel mode options block when requested", () => {
     const url = getDirectionsUrl({ origin: { query: "A" }, destination: { query: "B" }, travelMode: "two_wheeler" });
     expect(pbOf(url)).toBe(`!1m2!1sA!6e0!1m2!1sB!6e0!6m12!${TRAFFIC}!20m6!1e9!2e3!5e2!6b1!8b1!14b1`);

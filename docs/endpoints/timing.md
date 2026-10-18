@@ -131,7 +131,7 @@ Dragging a route in the Maps web client adds top-level field-9 messages, not sto
 
 They are pass-through: a request with vias comes back as one leg, while the same points as field-1 stopovers come back as one leg each. They do **not** avoid the stopover cost above — measured on the same on-road line, vias and stopovers return the same distance (dense ~1.9x, ~130 m ~1.12x). So a via does not make dense tracing accurate; the density is what matters either way.
 
-The route's real geometry is also available: with the full web-client `pb`, `data[0][7][i]` holds the route line as delta-encoded E7 coordinate arrays (latitude deltas, longitude deltas, first element absolute), index-aligned with the routes. The minimal request this module sends does not get it (`data[0][7]` is null), so `overview_path` is approximated from the step viewports instead.
+The route's real geometry is also available: adding `14b1` to the `6m` feature block makes the response include `data[0][7][i]`, the route line as delta-encoded E7 coordinate arrays (latitude deltas, longitude deltas, first element absolute), index-aligned with the routes. This module sets that flag for its `snap` pass. Without it `data[0][7]` is null, so `overview_path` is approximated from the step viewports instead. Tracing a route's own geometry at any spacing reproduces it exactly (1.000x), which is why the geometry pass exists.
 
 ## What the keyed APIs add
 

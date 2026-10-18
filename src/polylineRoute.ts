@@ -1,7 +1,7 @@
 import type { Impit } from "impit";
 import chunkPolyline from "./chunk.js";
 import directionsParser from "./directionsParser.js";
-import { simplifyPolyline, subdividePolyline } from "./polyline.js";
+import { simplifyPolyline, subdividePolyline, decimateByDistance } from "./polyline.js";
 import { cumulativeTiming } from "./timing.js";
 import { fetchRoutes } from "./utils.js";
 import type { RateLimiter } from "./rateLimiter.js";
@@ -18,6 +18,8 @@ import type {
 export const DEFAULT_SIMPLIFY_METERS = 10;
 /** Default longest segment after subdivision, in metres. */
 export const DEFAULT_MAX_GAP_METERS = 100;
+/** Default spacing of the control points used to obtain Google's road line. */
+export const DEFAULT_SNAP_GAP_METERS = 500;
 /** Points per request. The endpoint accepts 100 (99 legs); 101 returns HTTP 500. */
 export const MAX_POINTS_PER_REQUEST = 100;
 
@@ -26,6 +28,8 @@ export interface PolylineRouteParams {
     simplify: number;
     maxGap: number;
     maxPointsPerRequest: number;
+    snap: boolean;
+    snapGap: number;
     travelMode?: TravelMode | undefined;
     departureTime?: number | undefined;
     arrivalTime?: number | undefined;
@@ -76,6 +80,7 @@ async function fetchChunk(
     points: Coordinates[],
     params: PolylineRouteParams,
     times: { departureTime?: number | undefined; arrivalTime?: number | undefined },
+    geometry = false,
 ): Promise<ParsedRoute> {
     const data = await fetchRoutes({
         origin: { coordinates: points[0]! },
@@ -84,6 +89,7 @@ async function fetchChunk(
         travelMode: params.travelMode,
         departureTime: times.departureTime,
         arrivalTime: times.arrivalTime,
+        geometry,
         language: params.language,
         region: params.region,
         client: params.client,
@@ -92,6 +98,30 @@ async function fetchChunk(
     const route = directionsParser(data)[0];
     if (!route || route.legs.length === 0) throw new Error("No route found for a polyline chunk");
     return route;
+}
+
+/**
+ * Route the control points and collect Google's real road line for the path.
+ *
+ * The endpoint returns the route's geometry at `data[0][7]` only when the
+ * request carries the geometry flag. That line lies on Google's roads, unlike
+ * the caller's polyline, so re-routing it is what makes a dense per-waypoint
+ * trace accurate.
+ *
+ * @param chunks The control-point chunks, in order.
+ * @param params The routing context.
+ * @returns The concatenated route line, or an empty array when none came back.
+ */
+async function routeGeometry(chunks: Coordinates[][], params: PolylineRouteParams): Promise<Coordinates[]> {
+    const line: Coordinates[] = [];
+    for (const chunk of chunks) {
+        const route = await fetchChunk(chunk, params, {}, true);
+        for (const point of route.geometry ?? []) {
+            const last = line.at(-1);
+            if (!last || last.latitude !== point.latitude || last.longitude !== point.longitude) line.push(point);
+        }
+    }
+    return line;
 }
 
 interface RoutedChunks {
@@ -165,7 +195,19 @@ export async function computePolylineRoute(params: PolylineRouteParams): Promise
     const control = dedupe(subdividePolyline(simplifyPolyline(dense, params.simplify), params.maxGap));
     if (control.length < 2) throw new Error("A polyline must contain at least two distinct points");
 
-    const chunks = chunkPolyline(control, params.maxPointsPerRequest);
+    // Pass 1: route a sparse control set and keep Google's own road line. The
+    // control set is thinned to `snapGap` metres so the route does not detour,
+    // and the line lies on Google's roads, unlike the caller's polyline, so
+    // timing it (pass 2) avoids the per-point detours a dense off-road trace
+    // would add.
+    const geometry = params.snap
+        ? await routeGeometry(chunkPolyline(decimateByDistance(control, params.snapGap), params.maxPointsPerRequest), params)
+        : [];
+    // `control` is already deduped and at least two points, and `geometry` is
+    // deduped too, so the chosen path always has at least two points.
+    const path = dedupe(geometry.length >= 2 ? geometry : control);
+
+    const chunks = chunkPolyline(path, params.maxPointsPerRequest);
 
     let routed: RoutedChunks;
     let start: number;
@@ -184,9 +226,9 @@ export async function computePolylineRoute(params: PolylineRouteParams): Promise
         arrival: toTime(timings[index]!.arrival),
     }));
 
-    const waypoints: ParsedWaypoint[] = control.map((coordinates, index) => {
+    const waypoints: ParsedWaypoint[] = path.map((coordinates, index) => {
         const arrivalHere = index === 0 ? start : (timings[index - 1]?.arrival ?? start);
-        const departureHere = index === control.length - 1 ? timings.at(-1)!.arrival : (timings[index]?.departure ?? start);
+        const departureHere = index === path.length - 1 ? timings.at(-1)!.arrival : (timings[index]?.departure ?? start);
         return { coordinates, departure: toTime(departureHere), arrival: toTime(arrivalHere) };
     });
 
@@ -204,6 +246,7 @@ export async function computePolylineRoute(params: PolylineRouteParams): Promise
         duration_range: null,
         arrival: toTime(arrivalSeconds).text,
         overview_path: dense,
+        geometry: geometry.length >= 2 ? geometry : null,
         waypoints,
         legs,
     };

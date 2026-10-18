@@ -68,6 +68,7 @@ export interface ParsedRoute {
     duration_range: { min_seconds: number; max_seconds: number; text: string } | null;
     arrival: string | null;
     overview_path: Coordinates[];
+    geometry: Coordinates[] | null;
     waypoints: ParsedWaypoint[];
     legs: ParsedLeg[];
 }
@@ -92,6 +93,8 @@ export interface ComputeRoutesOptions {
     simplify?: number;
     max_gap?: number;
     max_points_per_request?: number;
+    snap?: boolean;
+    snap_gap?: number;
     language?: string;
     region?: string;
     clean?: boolean;
@@ -114,6 +117,7 @@ export interface Validate {
     simplify?: number | undefined;
     max_gap?: number | undefined;
     max_points_per_request?: number | undefined;
+    snap_gap?: number | undefined;
     clean: boolean;
 }
 
@@ -124,6 +128,7 @@ export interface FetchRoutesParams {
     travelMode?: TravelMode | undefined;
     departureTime?: number | undefined;
     arrivalTime?: number | undefined;
+    geometry?: boolean | undefined;
     language: string;
     region: string;
     client: Impit;

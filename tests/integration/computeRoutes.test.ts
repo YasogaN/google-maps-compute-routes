@@ -119,7 +119,7 @@ describe("computeRoutes pipeline (integration)", () => {
       { latitude: 6.90215, longitude: 79.9153 },
     ]);
     // Disable simplification so every decoded point is sent as-is.
-    await compute({ polyline, simplify: 0, max_gap: 0, clean: true });
+    await compute({ polyline, simplify: 0, max_gap: 0, snap: false, clean: true });
 
     const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
     expect(calledUrl).toContain("6.91191,79.93237");
@@ -141,6 +141,7 @@ describe("computeRoutes pipeline (integration)", () => {
       simplify: 0,
       max_gap: 0,
       max_points_per_request: 2,
+      snap: false,
       departure_time: 1800000000,
       clean: true,
     })) as ParsedRoute[];
@@ -157,6 +158,37 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(urls[1]).toContain("3j1800000330");
   });
 
+  it("does not snap a polyline by default", async () => {
+    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    await compute({
+      polyline: [
+        { latitude: 6.9, longitude: 79.9 },
+        { latitude: 6.92, longitude: 79.92 },
+      ],
+      clean: true,
+    });
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("adds a geometry pass when snap is on", async () => {
+    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    await compute({
+      polyline: [
+        { latitude: 6.9, longitude: 79.9 },
+        { latitude: 6.92, longitude: 79.92 },
+      ],
+      snap: true,
+      clean: true,
+    });
+
+    // one geometry pass, then one timing pass
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(decodeURIComponent(mockFetch.mock.calls[0]![0] as string)).toContain("14b1");
+  });
+
   it("uses the default simplification and a polyline arrival deadline", async () => {
     mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
 
@@ -166,6 +198,7 @@ describe("computeRoutes pipeline (integration)", () => {
         { latitude: 6.92, longitude: 79.92 },
       ],
       arrival_time: 1800000000,
+      snap: false,
       clean: true,
     });
 

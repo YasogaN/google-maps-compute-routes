@@ -1,6 +1,6 @@
 import { createClient } from "./client.js";
 import directionsParser from "./directionsParser.js";
-import { computePolylineRoute, DEFAULT_MAX_GAP_METERS, DEFAULT_SIMPLIFY_METERS, MAX_POINTS_PER_REQUEST } from "./polylineRoute.js";
+import { computePolylineRoute, DEFAULT_MAX_GAP_METERS, DEFAULT_SIMPLIFY_METERS, DEFAULT_SNAP_GAP_METERS, MAX_POINTS_PER_REQUEST } from "./polylineRoute.js";
 import { RateLimiter } from "./rateLimiter.js";
 import { fetchRoutes, parseDirectionsUrl, parsePolylineInput, toRouteLocation, toUnixSeconds, validateParams } from "./utils.js";
 import { warmUp } from "./warmup.js";
@@ -65,6 +65,8 @@ export async function computeRoutes(
     simplify,
     max_gap,
     max_points_per_request,
+    snap,
+    snap_gap,
     language = "en",
     region = "us",
     clean = false,
@@ -76,7 +78,7 @@ export async function computeRoutes(
   }: ComputeRoutesOptions
 ): Promise<ParsedRoute[] | JsonArray> {
   try {
-    validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, simplify, max_gap, max_points_per_request, clean });
+    validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, simplify, max_gap, max_points_per_request, snap_gap, clean });
 
     const limiter = new RateLimiter(requests_per_second);
     const client = createClient({ proxy: { url: proxyUrl, tls: ignoreTls } });
@@ -89,6 +91,8 @@ export async function computeRoutes(
         simplify: simplify ?? DEFAULT_SIMPLIFY_METERS,
         maxGap: max_gap ?? DEFAULT_MAX_GAP_METERS,
         maxPointsPerRequest: max_points_per_request ?? MAX_POINTS_PER_REQUEST,
+        snap: snap ?? false,
+        snapGap: snap_gap ?? DEFAULT_SNAP_GAP_METERS,
         travelMode: travel_mode,
         departureTime: departure_time !== undefined ? toUnixSeconds(departure_time, "departure_time") : undefined,
         arrivalTime: arrival_time !== undefined ? toUnixSeconds(arrival_time, "arrival_time") : undefined,

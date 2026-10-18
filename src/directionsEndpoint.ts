@@ -7,6 +7,7 @@ export interface DirectionsUrl {
     travelMode?: TravelMode | undefined;
     departureTime?: number | undefined;
     arrivalTime?: number | undefined;
+    geometry?: boolean | undefined;
     language?: string;
     region?: string;
 }
@@ -92,14 +93,15 @@ function buildLocation(location: RouteLocation): string {
  * @param options.region        - Region bias (`gl`), defaults to `us`.
  * @returns The fully encoded directions endpoint URL.
  */
-export default function getDirectionsUrl({ origin, destination, waypoints = [], travelMode, departureTime, arrivalTime, language = "en", region = "us" }: DirectionsUrl): string {
+export default function getDirectionsUrl({ origin, destination, waypoints = [], travelMode, departureTime, arrivalTime, geometry, language = "en", region = "us" }: DirectionsUrl): string {
     let pb = `!${[origin, ...waypoints, destination].map(buildLocation).join("!")}`;
 
     // The `6m` feature block always carries the traffic-aware routing block, so
     // a routed (waypoint) trip returns per-leg traffic too. The time (`19m3`,
     // enum 0 depart / 1 arrive) and the travel mode (`20m6`) join it. The
     // block's `m` count is the total number of tokens it contains, so each
-    // child contributes 1 plus its own token count (5 traffic, 4 time, 7 mode).
+    // child contributes 1 plus its own token count (5 traffic, 4 time, 7 mode,
+    // 1 geometry).
     const options: string[] = [TRAFFIC_BLOCK];
     let count = 5;
     if (departureTime !== undefined) {
@@ -112,6 +114,11 @@ export default function getDirectionsUrl({ origin, destination, waypoints = [], 
     if (travelMode !== undefined) {
         options.push(`20m6!1e${TRAVEL_MODE_VALUES[travelMode]}!2e3!5e2!6b1!8b1!14b1`);
         count += 7;
+    }
+    if (geometry) {
+        // `14b1` makes the response include the route line at `data[0][7]`.
+        options.push("14b1");
+        count += 1;
     }
     pb += `!6m${count}!${options.join("!")}`;
 
