@@ -108,6 +108,24 @@ describe("validateParams", () => {
       validateParams({ url: undefined, origin: "A", destination: "B", departure_time: new Date("nope"), clean: false }),
     ).toThrow(/Invalid departure_time/);
   });
+
+  it("rejects an invalid simplify tolerance", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: "A", destination: "B", simplify: -1, clean: false }),
+    ).toThrow(/Invalid simplify/);
+  });
+
+  it("rejects an invalid max_gap", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: "A", destination: "B", max_gap: Number.NaN, clean: false }),
+    ).toThrow(/Invalid max_gap/);
+  });
+
+  it("rejects an invalid max_points_per_request", () => {
+    expect(() =>
+      validateParams({ url: undefined, origin: "A", destination: "B", max_points_per_request: 1, clean: false }),
+    ).toThrow(/Invalid max_points_per_request/);
+  });
 });
 
 describe("toUnixSeconds", () => {

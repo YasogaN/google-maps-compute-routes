@@ -26,7 +26,7 @@ export const MAX_INTERMEDIATE_WAYPOINTS = 25;
  * @param options.clean       - Whether to return parsed routes (must be boolean).
  * @throws {Error} If any parameter is invalid.
  */
-export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, clean }: Validate) {
+export function validateParams({ url, origin, destination, waypoints, polyline, travel_mode, departure_time, arrival_time, simplify, max_gap, max_points_per_request, clean }: Validate) {
   if (polyline !== undefined) {
     // The path comes from the polyline, so no URL or waypoints are required.
   } else if (url !== undefined) {
@@ -65,6 +65,16 @@ export function validateParams({ url, origin, destination, waypoints, polyline, 
 
   if (departure_time !== undefined) toUnixSeconds(departure_time, "departure_time");
   if (arrival_time !== undefined) toUnixSeconds(arrival_time, "arrival_time");
+
+  if (simplify !== undefined && (!Number.isFinite(simplify) || simplify < 0)) {
+    throw new Error(`Invalid simplify: ${simplify}`);
+  }
+  if (max_gap !== undefined && (!Number.isFinite(max_gap) || max_gap < 0)) {
+    throw new Error(`Invalid max_gap: ${max_gap}`);
+  }
+  if (max_points_per_request !== undefined && (!Number.isInteger(max_points_per_request) || max_points_per_request < 2)) {
+    throw new Error(`Invalid max_points_per_request: ${max_points_per_request}`);
+  }
 
   if (typeof clean !== "boolean") {
     throw new Error(`Invalid value for 'clean': ${clean}`);

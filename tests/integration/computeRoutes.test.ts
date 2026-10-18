@@ -118,12 +118,59 @@ describe("computeRoutes pipeline (integration)", () => {
       { latitude: 6.90777, longitude: 79.9304 },
       { latitude: 6.90215, longitude: 79.9153 },
     ]);
-    await compute({ polyline, clean: true });
+    // Disable simplification so every decoded point is sent as-is.
+    await compute({ polyline, simplify: 0, max_gap: 0, clean: true });
 
     const calledUrl = decodeURIComponent(mockFetch.mock.calls[0]![0] as string);
     expect(calledUrl).toContain("6.91191,79.93237");
     expect(calledUrl).toContain("6.90777,79.9304");
     expect(calledUrl).toContain("6.90215,79.9153");
+  });
+
+  it("chunks a long polyline and returns one merged route", async () => {
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+    mockFetch.mockResolvedValueOnce(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    const polyline = [
+      { latitude: 6.9, longitude: 79.9 },
+      { latitude: 6.91, longitude: 79.91 },
+      { latitude: 6.92, longitude: 79.92 },
+    ];
+    const routes = (await compute({
+      polyline,
+      simplify: 0,
+      max_gap: 0,
+      max_points_per_request: 2,
+      departure_time: 1800000000,
+      clean: true,
+    })) as ParsedRoute[];
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(routes).toHaveLength(1);
+    expect(routes[0]!.waypoints).toHaveLength(3);
+    expect(routes[0]!.legs).toHaveLength(2);
+    expect(routes[0]!.legs[0]!.departure).toEqual({ seconds: 1800000000, text: "2027-01-15T08:00:00.000Z" });
+
+    const urls = mockFetch.mock.calls.map((call) => decodeURIComponent(call[0] as string));
+    expect(urls[0]).toContain("3j1800000000");
+    // the second chunk departs after the first leg's traffic duration (330 s)
+    expect(urls[1]).toContain("3j1800000330");
+  });
+
+  it("uses the default simplification and a polyline arrival deadline", async () => {
+    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
+
+    await compute({
+      polyline: [
+        { latitude: 6.9, longitude: 79.9 },
+        { latitude: 6.92, longitude: 79.92 },
+      ],
+      arrival_time: 1800000000,
+      clean: true,
+    });
+
+    // one backward request, then one forward refinement
+    expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
   it("prefers explicit waypoints over the URL", async () => {
