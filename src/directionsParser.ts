@@ -123,6 +123,8 @@ function parseLeg(leg: unknown): ParsedLeg | null {
         duration_in_traffic: Array.isArray(traffic) && typeof trafficSeconds === "number"
             ? { seconds: trafficSeconds, text: stringOrEmpty(getPath(traffic, [0, 1])) }
             : null,
+        departure: null,
+        arrival: null,
         steps: parseSteps(leg),
     };
 }
@@ -191,6 +193,7 @@ function parseRoute(route: unknown): ParsedRoute | null {
             : null,
         arrival: stringOrEmpty(getPath(route, [22, 8, 0, 0])) || null,
         overview_path: overviewPath,
+        waypoints: [],
         legs,
     };
 }

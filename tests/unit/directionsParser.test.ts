@@ -25,11 +25,14 @@ describe("directionsParser", () => {
         { latitude: 6.9, longitude: 79.9 },
         { latitude: 6.8, longitude: 79.8 },
       ],
+      waypoints: [],
       legs: [
         {
           distance: { meters: 1200, text: "1.2 km" },
           duration: { seconds: 300, text: "5 min" },
           duration_in_traffic: { seconds: 330, text: "6 min" },
+          departure: null,
+          arrival: null,
           steps: [
             {
               instructions:
