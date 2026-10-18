@@ -95,6 +95,12 @@ export interface ComputeRoutesOptions {
     max_points_per_request?: number;
     snap?: boolean;
     snap_gap?: number;
+    /**
+     * Ask the endpoint for the route's own road line, returned as
+     * `ParsedRoute.geometry`. Adds the `14b1` flag to the request's feature
+     * block. Without it the endpoint omits `data[0][7]` and `geometry` is null.
+     */
+    geometry?: boolean | undefined;
     language?: string;
     region?: string;
     clean?: boolean;

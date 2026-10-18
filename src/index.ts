@@ -44,6 +44,7 @@ export type {
  * @param options.max_points_per_request - Points per request for a polyline, defaults to `100`.
  * @param options.snap        - Route a sparse control set and time Google's road line so a polyline follows the roads instead of detouring at every point, defaults to `true`.
  * @param options.snap_gap    - Spacing of the sparse control set used by `snap`, in metres, defaults to `500`.
+ * @param options.geometry    - When `true`, ask for the route's own road line and return it as `ParsedRoute.geometry`; ignored on the `polyline` path, which requests it automatically.
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @param options.clean       - When `true`, return parsed `ParsedRoute` objects.
@@ -69,6 +70,7 @@ export async function computeRoutes(
     max_points_per_request,
     snap,
     snap_gap,
+    geometry,
     language = "en",
     region = "us",
     clean = false,
@@ -121,6 +123,7 @@ export async function computeRoutes(
       travelMode: travel_mode,
       departureTime: departure_time !== undefined ? toUnixSeconds(departure_time, "departure_time") : undefined,
       arrivalTime: arrival_time !== undefined ? toUnixSeconds(arrival_time, "arrival_time") : undefined,
+      geometry,
       language,
       region,
       client,
