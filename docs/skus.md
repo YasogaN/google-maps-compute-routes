@@ -23,7 +23,7 @@ Billed **per element**, where the number of elements is origins × destinations.
 ## Supported in this module
 
 - **Travel mode** (`travel_mode`): `driving`, `walking` and `bicycling` stay in Essentials; `two_wheeler` maps to the Enterprise tier.
-- **Waypoints**: the endpoint accepts at most 100 top-level points per request, so the enforced limit is 98 intermediate waypoints (`MAX_INTERMEDIATE_WAYPOINTS`) once the origin and destination are counted. The public Routes API's documented maximum of 25 intermediates is a Pro billing trigger on the keyed API, not a limit on this one.
+- **Waypoints**: the endpoint accepts 100 top-level points per request; with the origin and destination counted, that caps a request at 98 intermediate waypoints (`MAX_INTERMEDIATE_WAYPOINTS`). The public Routes API's documented maximum of 25 is a Pro billing trigger on the keyed API, not a limit on this one.
 - **Matrix size**: the documented maximum of 625 elements is enforced (`MAX_MATRIX_ELEMENTS`).
 - **Traffic-aware durations**: the endpoint always returns live traffic, so the `duration` fields are traffic-aware (equivalent to `TRAFFIC_AWARE`).
 
