@@ -14,7 +14,7 @@ https://www.google.com/maps/preview/directions
 
 - `gl`: Region bias used for geocoding and routing (e.g. `us`, `lk`).
 
-- `pb`: Protobuffer data describing the origin, destination and client options.
+- `pb`: Protobuf data describing the origin, destination and client options.
 
 ## PB Data Breakdown
 

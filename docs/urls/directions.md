@@ -13,7 +13,7 @@ https://www.google.com/maps/dir/
 - `Latitude`: Latitude of the point at the center of the screen.
 - `Longitude`: Longitude of the point at the center of the screen.
 - `Zoom Level`: Zoom level of the map.
-- `PBData`: Protobuffer data with the prefix `data=`.
+- `PBData`: Protobuf data with the prefix `data=`.
 
 ## Construction of the URL
 

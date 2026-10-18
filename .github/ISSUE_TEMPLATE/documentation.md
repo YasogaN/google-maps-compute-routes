@@ -16,5 +16,5 @@ assignees: ''
 ### Steps to reproduce the issue
 ***No steps provided***
 
-### Other relevent logs, error messages, or screenshots (if applicable)
+### Other relevant logs, error messages, or screenshots (if applicable)
 ***Not provided***
