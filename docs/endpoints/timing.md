@@ -204,6 +204,10 @@ The `clean` output exposes `route[1]` as the `legs` array (one entry per
 waypoint interval), each with its own `distance`, `duration` and
 `duration_in_traffic`. Its steps come from flattening each leg's step groups.
 
+### Leg traffic is minute-rounded
+
+Every per-leg `duration_in_traffic` is rounded to whole minutes. On a dense trace (a waypoint every 25–30 m) each leg reports "1 min" regardless of length, so summing legs is meaningless — a 1 h route summed to 10 h. The leg `duration` is second-resolution, though, and each chunk's route-level `duration_in_traffic` is one real estimate. A chunked polyline route therefore takes each chunk's route-level totals and scales the leg durations by the chunk's traffic ratio, so the per-waypoint times are smooth and sum to the route total.
+
 ## Using it in this module
 
 ```ts

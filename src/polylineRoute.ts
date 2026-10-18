@@ -46,9 +46,38 @@ function toTime(seconds: number): ParsedTime {
     return { seconds, text: new Date(seconds * 1000).toISOString() };
 }
 
-/** The traffic-aware duration when Google gives one, else the static duration. */
-function legSeconds(leg: ParsedLeg): number {
-    return leg.duration_in_traffic?.seconds ?? leg.duration.seconds;
+/** A duration as whole seconds plus a human rendering. */
+function toDuration(seconds: number): { seconds: number; text: string } {
+    const whole = Math.round(seconds);
+    return { seconds: whole, text: formatDuration(whole) };
+}
+
+/**
+ * Scale a chunk's legs to its route-level timing.
+ *
+ * The endpoint rounds every per-leg traffic figure to whole minutes, so a dense
+ * trace reports "1 min" for each short leg and summing them is meaningless. The
+ * route-level figures are a single estimate each, and the leg `duration` is
+ * second-resolution, so each leg's traffic-aware time is its `duration` scaled
+ * by the chunk's traffic ratio. The scaled legs then sum exactly to the chunk's
+ * traffic total.
+ *
+ * @param route One parsed chunk.
+ * @returns The scaled legs, their durations and the chunk's route-level totals.
+ */
+function scaleChunk(route: ParsedRoute): { legs: ParsedLeg[]; durations: number[]; duration: number; traffic: number } {
+    const duration = route.duration.seconds > 0
+        ? route.duration.seconds
+        : route.legs.reduce((sum, leg) => sum + leg.duration.seconds, 0);
+    const live = route.duration_in_traffic?.seconds;
+    const hasTraffic = typeof live === "number" && live > 0;
+    const traffic = hasTraffic ? live : duration;
+    const factor = hasTraffic && duration > 0 ? traffic / duration : 1;
+    const durations = route.legs.map((leg) => leg.duration.seconds * factor);
+    const legs = hasTraffic
+        ? route.legs.map((leg, index) => ({ ...leg, duration_in_traffic: toDuration(durations[index]!) }))
+        : route.legs;
+    return { legs, durations, duration, traffic };
 }
 
 /** Drop consecutive duplicate coordinates so no zero-length leg is sent. */
@@ -131,6 +160,8 @@ interface RoutedChunks {
     durations: number[];
     first: ParsedRoute;
     start: number;
+    duration: number;
+    traffic: number;
 }
 
 /**
@@ -141,19 +172,23 @@ async function routeForward(chunks: Coordinates[][], params: PolylineRouteParams
     const legs: ParsedLeg[] = [];
     const durations: number[] = [];
     let first: ParsedRoute | undefined;
+    let duration = 0;
+    let traffic = 0;
     let cursor = start;
 
     for (const chunk of chunks) {
         const route = await fetchChunk(chunk, params, { departureTime: cursor });
         first ??= route;
-        for (const leg of route.legs) {
-            const seconds = legSeconds(leg);
-            durations.push(seconds);
-            legs.push(leg);
-            cursor += seconds;
+        const scaled = scaleChunk(route);
+        duration += scaled.duration;
+        traffic += scaled.traffic;
+        for (let index = 0; index < scaled.legs.length; index++) {
+            durations.push(scaled.durations[index]!);
+            legs.push(scaled.legs[index]!);
+            cursor += scaled.durations[index]!;
         }
     }
-    return { legs, durations, first: first!, start };
+    return { legs, durations, first: first!, start, duration, traffic };
 }
 
 /**
@@ -169,8 +204,7 @@ async function routeBackward(chunks: Coordinates[][], params: PolylineRouteParam
     let cursor = arrival;
     for (let index = chunks.length - 1; index >= 0; index--) {
         const route = await fetchChunk(chunks[index]!, params, { arrivalTime: cursor });
-        const total = route.legs.reduce((sum, leg) => sum + legSeconds(leg), 0);
-        departures[index] = cursor - total;
+        departures[index] = cursor - scaleChunk(route).traffic;
         cursor = departures[index]!;
     }
     return routeForward(chunks, params, departures[0]!);
@@ -237,8 +271,8 @@ export async function computePolylineRoute(params: PolylineRouteParams): Promise
     });
 
     const distanceMeters = legs.reduce((sum, leg) => sum + leg.distance.meters, 0);
-    const durationSeconds = legs.reduce((sum, leg) => sum + leg.duration.seconds, 0);
-    const trafficSeconds = routed.durations.reduce((sum, seconds) => sum + seconds, 0);
+    const durationSeconds = routed.duration;
+    const trafficSeconds = routed.traffic;
     const arrivalSeconds = timings.at(-1)!.arrival;
 
     return {

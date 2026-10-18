@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Routed trips (intermediate `waypoints`, including a chunked `polyline`) now return a traffic-aware duration per leg. The request was missing the web client's traffic-aware routing block (`2m4!5m1!6e2!20e3!39b1`), so with waypoints every leg's traffic block was empty and a chosen departure time did not affect the legs
 - `travel_mode: "bicycling"` sent the transit enum (`3`) instead of the cycling enum (`1`), so a bicycle request was routed as transit
 - `overview_path` was ended with the route summary's `[7][3][2]`, which is the south-west corner of the route's bounding box, not the destination; it now ends at the last step's end coordinate
+- `directionsParser` treated an empty route traffic block (`summary[10] = []`) as `{ seconds: 0 }` instead of `null`
+- Per-leg traffic-aware durations are rounded to whole minutes by the endpoint, so summing them inflated a dense trace (a 1 h route reported 10 h). A chunked polyline route now takes each chunk's route-level totals and scales the second-resolution leg durations by the chunk's traffic ratio, so per-waypoint times are smooth and sum to the route total
 
 ## [1.2.1] - 2026-10-18
 

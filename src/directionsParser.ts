@@ -215,6 +215,7 @@ function parseRoute(route: unknown, geometryNode?: unknown): ParsedRoute | null 
 
     const traffic = getPath(summary, [10]);
     const range = Array.isArray(traffic) ? getPath(traffic, [4]) : undefined;
+    const trafficSeconds = getPath(traffic, [0, 0]);
 
     const legs = parseLegs(route);
     const geometry = parseGeometry(geometryNode);
@@ -240,8 +241,8 @@ function parseRoute(route: unknown, geometryNode?: unknown): ParsedRoute | null 
         summary: stringOrEmpty(getPath(summary, [1])),
         distance: parseDistance(getPath(summary, [2])),
         duration: parseDuration(getPath(summary, [3])),
-        duration_in_traffic: Array.isArray(traffic)
-            ? { seconds: numberOrZero(getPath(traffic, [0, 0])), text: stringOrEmpty(getPath(traffic, [0, 1])) }
+        duration_in_traffic: Array.isArray(traffic) && typeof trafficSeconds === "number"
+            ? { seconds: trafficSeconds, text: stringOrEmpty(getPath(traffic, [0, 1])) }
             : null,
         duration_range: Array.isArray(range)
             ? {
