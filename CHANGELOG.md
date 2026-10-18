@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Documentation
 
+- Documented the 98 intermediate-waypoint cap in the ReadMe's `waypoints` argument and tightened the waypoint-limit wording on the SKU and endpoint pages, added the `geometry`, `waypoints` and per-leg `departure`/`arrival` fields to the clean-output shape, and corrected the `overview_path` description, the directions-URL and per-leg examples, the contributing branch, and several typos
 - Folded `docs/endpoints/timing.md` into `docs/endpoints/previewdirections.md` (departure/arrival, via points, geometry, polyline chunking and snap, per-leg timing) and repointed the links
 
 ## [1.3.0] - 2026-10-18
