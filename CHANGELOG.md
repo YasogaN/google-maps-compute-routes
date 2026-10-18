@@ -38,7 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Documentation
 
-- Added a [departure/arrival and per-leg timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md) documenting the `19m3` time field the Maps web client sends and where the time between waypoints is read
+- Added the departure/arrival (`19m3`), via-point, geometry (`14b1`) and per-leg timing details to the [endpoint page](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/previewdirections.md)
 
 ## [1.1.0] - 2026-10-15
 

@@ -14,6 +14,6 @@ The most useful positions are:
 - `[0][1][i][1][j][1][k][1][m]` - step `m` of group `k` (HTML instructions at `[0][1]`).
 - `[0][20]` - the per-travel-mode ETA table.
 
-The leg duration is the time between its two waypoints. See the [timing map](../endpoints/timing.md) for departure/arrival and per-leg timing.
+The leg duration is the time between its two waypoints. See the [endpoint page](../endpoints/previewdirections.md#per-leg-timing) for departure/arrival and per-leg timing.
 
 Because the endpoint is undocumented, this shape can change without notice. Prefer `clean: true` unless you specifically need fields the parser omits.

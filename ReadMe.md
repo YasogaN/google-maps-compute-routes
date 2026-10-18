@@ -155,7 +155,7 @@ const routes = await computeRoutes({
 // traffic-aware time between its two waypoints
 ```
 
-See the [timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md) for the request field and how per-waypoint timing works.
+See the [endpoint page](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/previewdirections.md#departure-and-arrival-time) for the request field and how per-waypoint timing works.
 
 ### Session cookies
 
@@ -215,7 +215,7 @@ A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latit
 
 All documentation related to endpoints and URL formats used in this project can be found in the [docs](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/) folder. This module uses the `preview/directions` endpoint to compute routes. Note that everything included here was based on my research, so errors could be present. A pull request is always welcome (see [contributing](#contributing)).
 
-For departure/arrival time control and per-waypoint leg timing, see the [timing map](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/timing.md). The route is returned as one leg per waypoint, and `departure_time` / `arrival_time` plan the trip for a chosen time.
+For departure/arrival time control and per-waypoint leg timing, see the [endpoint page](https://github.com/YasogaN/google-maps-compute-routes/blob/main/docs/endpoints/previewdirections.md). The route is returned as one leg per waypoint, and `departure_time` / `arrival_time` plan the trip for a chosen time.
 
 ---
 
