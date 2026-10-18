@@ -22,7 +22,7 @@ If you have an idea to improve the project, please open an issue with the follow
 ### Submitting Pull Requests
 
 To submit a pull request (PR):
-1. Fork the repository and create your branch from `dev`.
+1. Fork the repository and create your branch from `main`.
 2. If you’ve added code that should be tested, add tests.
 3. Ensure the test suite passes (`pnpm test`).
 4. Make sure the type check passes (`pnpm run typecheck`).
