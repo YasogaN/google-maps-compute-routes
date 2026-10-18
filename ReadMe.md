@@ -68,6 +68,7 @@ const routes = await computeRoutes({
 });
 // routes[0].legs.length === 3 (origin -> stop A -> stop B -> destination)
 // routes[0].overview_path is an approximate path: one point per step plus the destination
+// pass geometry: true and routes[0].geometry is Google's own road line instead
 ```
 
 ### Get the ETA for a polyline
@@ -190,6 +191,8 @@ All arguments are passed as a single object:
 `snap` - `boolean`: Whether a polyline first routes a sparse control set, takes Google's road line and times that, so the trace follows Google's roads instead of detouring at every point. Defaults to `true`.
 
 `snap_gap` - `number`: Spacing of the sparse control set used by `snap`, in metres. Defaults to `500`.
+
+`geometry` - `boolean`: Ask the endpoint for the route's own road line, returned as `ParsedRoute.geometry`. Defaults to `false`, so `geometry` is `null` and `overview_path` falls back to an approximate skeleton; a `polyline` request sets it automatically, so the option is ignored there.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 

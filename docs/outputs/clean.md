@@ -66,7 +66,7 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
 
 For a `polyline` route, `legs[].departure` / `legs[].arrival` carry the chained clock time of each leg, and `waypoints` lists the simplified control points with the same times (the dense input line is in `overview_path`). A non-polyline route returns `waypoints: []` and null leg times.
 
-`overview_path` is the route's line. For a plain request it is an approximate skeleton assembled from each step's `start_location` plus the route's end, because the endpoint only returns a real line when the geometry flag is sent. For a `polyline` request it is the caller's dense input instead, and `geometry` holds Google's own road line whenever the `snap` pass ran. `geometry` is `null` when no line was requested.
+`overview_path` is the route's line. For a plain request it is an approximate skeleton assembled from each step's `start_location` plus the route's end, because the endpoint only returns a real line when the geometry flag is sent. Pass `geometry: true` to request that line: `geometry` is then populated and `overview_path` is built from it. For a `polyline` request `overview_path` is the caller's dense input instead, and `geometry` holds Google's own road line whenever the `snap` pass ran (the `polyline` path requests the flag itself, so the `geometry` option is ignored there). `geometry` is `null` when no line was requested.
 
 # Reporting Issues
 
