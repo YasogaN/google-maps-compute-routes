@@ -121,6 +121,15 @@ Every point is a **stopover**: Google routes to it and leaves it. The endpoint h
 
 The lesson: do not trace a polyline point-by-point. Simplify with a tolerance and cap the gap so control points are a few hundred metres apart at least. The `simplify` / `max_gap` options do this, but the defaults (10 m / 100 m) keep too many points for an accurate ETA — raise `max_gap` (500 m, say) when the duration matters.
 
+### Snapping the trace to Google's own line
+
+Because tracing a route's own geometry is exact at any spacing, this module can put the polyline on Google's roads first. With `snap` on (the default for a polyline):
+
+1. Thin the path to `snap_gap` metres (default 500) and route it once with the `14b1` geometry flag. This control set is sparse, so Google does not detour.
+2. Take the returned line (`data[0][7]`), thin it to at least 25 m — Google's line is often ~10 m apart and a trace that tight zigzags — and route that for the per-leg times.
+
+The timed route then follows Google's roads, so the per-point detours are gone. Measured on a ~250–300 m-spaced OSRM line: 2.08x → 1.57x in a sparse-road region, 1.12x unchanged in a dense grid. The residual gap is Google's road network differing from the input line, which snapping cannot remove.
+
 ### Via points (pass-through)
 
 Dragging a route in the Maps web client adds top-level field-9 messages, not stopovers:

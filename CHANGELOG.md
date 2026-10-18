@@ -27,7 +27,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `computeRoutes()` now routes a `polyline` of any length: it is simplified (Douglas-Peucker) and its long segments subdivided, split into chunks of at most 100 points and routed in order, returning one merged route. A departure is chained forward by the running leg totals; an arrival deadline is chained backward then refined with one forward pass
 - `simplify`, `max_gap` and `max_points_per_request` options for polyline chunking
 - `ParsedRoute.waypoints` (timed control points) and `ParsedLeg.departure` / `ParsedLeg.arrival` (Unix seconds plus ISO 8601 text)
-- `ParsedRoute.geometry` (the route line, decoded from `data[0][7]` when the request asks for it with the `14b1` flag) and `snap` / `snap_gap` polyline options. `snap` is experimental: it routes a sparse control set, takes Google's road line and times that instead, but the timing pass over a waypoint-route-derived line does not yet reproduce the line (see the timing map)
+- `ParsedRoute.geometry` (the route line, decoded from `data[0][7]` when the request asks for it with the `14b1` flag)
+- Polyline `snap` (default on) and `snap_gap` options. Snapping routes a sparse control set, keeps Google's road line, thins it to 25 m and times that, so an off-centreline polyline traces accurately instead of detouring at every point: a ~250-300 m-spaced OSRM line went from 2.08x to 1.57x in a sparse-road region and stayed at 1.12x in a dense grid
 
 ### Fixed
 

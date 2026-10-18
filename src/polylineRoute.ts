@@ -20,6 +20,8 @@ export const DEFAULT_SIMPLIFY_METERS = 10;
 export const DEFAULT_MAX_GAP_METERS = 100;
 /** Default spacing of the control points used to obtain Google's road line. */
 export const DEFAULT_SNAP_GAP_METERS = 500;
+/** Minimum spacing of the points used to time Google's road line, in metres. */
+export const GEOMETRY_MIN_SPACING_METERS = 25;
 /** Points per request. The endpoint accepts 100 (99 legs); 101 returns HTTP 500. */
 export const MAX_POINTS_PER_REQUEST = 100;
 
@@ -203,9 +205,11 @@ export async function computePolylineRoute(params: PolylineRouteParams): Promise
     const geometry = params.snap
         ? await routeGeometry(chunkPolyline(decimateByDistance(control, params.snapGap), params.maxPointsPerRequest), params)
         : [];
-    // `control` is already deduped and at least two points, and `geometry` is
-    // deduped too, so the chosen path always has at least two points.
-    const path = dedupe(geometry.length >= 2 ? geometry : control);
+    // Google's line is often ~10 m apart, and a trace that tight zigzags, so
+    // thin it before timing. `control` is already deduped and at least two
+    // points, and `geometry` is deduped too, so the chosen path has at least
+    // two points.
+    const path = dedupe(geometry.length >= 2 ? decimateByDistance(geometry, GEOMETRY_MIN_SPACING_METERS) : control);
 
     const chunks = chunkPolyline(path, params.maxPointsPerRequest);
 

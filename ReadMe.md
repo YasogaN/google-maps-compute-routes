@@ -100,7 +100,7 @@ const routes = await computeRoutes({
 // routes[0].waypoints[i].arrival -> time the route reaches each control point
 ```
 
-> Every point is a **stopover** and the endpoint has no pass-through ("via") mode, so densely sampled points inflate the route (measured: ~25 m spacing → up to ~1.9–3.4x distance; ~250–500 m → ~1.1x). Do not sample every 25 m — keep control points a few hundred metres apart (`max_gap`), or the ETA will be wrong.
+> Every point is a **stopover**, so a dense off-road trace inflates the route (measured: ~25 m spacing → up to ~1.9–3.4x; ~250–500 m → ~1.1x). With `snap` on (the default) the trace first follows Google's own road line, which removes most of that; with `snap: false`, keep control points a few hundred metres apart (`max_gap`).
 
 ### Compute a route matrix
 
@@ -186,6 +186,10 @@ All arguments are passed as a single object:
 `max_gap` - `number`: Longest segment after subdividing a simplified polyline, in metres. Defaults to `100`; `0` disables subdivision. Raise it (e.g. `500`) when tracing a polyline so the stopovers are sparse enough not to inflate the route.
 
 `max_points_per_request` - `number`: Points per request when a polyline is chunked. Defaults to `100` (the endpoint accepts 99 legs); the minimum is `2`.
+
+`snap` - `boolean`: Whether a polyline first routes a sparse control set, takes Google's road line and times that, so the trace follows Google's roads instead of detouring at every point. Defaults to `true`.
+
+`snap_gap` - `number`: Spacing of the sparse control set used by `snap`, in metres. Defaults to `500`.
 
 A `RouteLocation` may contain `query`, `place_id` and/or `coordinates` (`{ latitude, longitude }`).
 

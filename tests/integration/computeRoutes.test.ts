@@ -158,7 +158,7 @@ describe("computeRoutes pipeline (integration)", () => {
     expect(urls[1]).toContain("3j1800000330");
   });
 
-  it("does not snap a polyline by default", async () => {
+  it("snaps a polyline by default", async () => {
     mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
 
     await compute({
@@ -169,22 +169,7 @@ describe("computeRoutes pipeline (integration)", () => {
       clean: true,
     });
 
-    expect(mockFetch).toHaveBeenCalledTimes(1);
-  });
-
-  it("adds a geometry pass when snap is on", async () => {
-    mockFetch.mockResolvedValue(textResponse(JSON.stringify(makeResponse([makeRoute()]))));
-
-    await compute({
-      polyline: [
-        { latitude: 6.9, longitude: 79.9 },
-        { latitude: 6.92, longitude: 79.92 },
-      ],
-      snap: true,
-      clean: true,
-    });
-
-    // one geometry pass, then one timing pass
+    // one geometry pass, then one timing pass, and the request asks for geometry
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(decodeURIComponent(mockFetch.mock.calls[0]![0] as string)).toContain("14b1");
   });

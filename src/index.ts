@@ -91,7 +91,7 @@ export async function computeRoutes(
         simplify: simplify ?? DEFAULT_SIMPLIFY_METERS,
         maxGap: max_gap ?? DEFAULT_MAX_GAP_METERS,
         maxPointsPerRequest: max_points_per_request ?? MAX_POINTS_PER_REQUEST,
-        snap: snap ?? false,
+        snap: snap ?? true,
         snapGap: snap_gap ?? DEFAULT_SNAP_GAP_METERS,
         travelMode: travel_mode,
         departureTime: departure_time !== undefined ? toUnixSeconds(departure_time, "departure_time") : undefined,
