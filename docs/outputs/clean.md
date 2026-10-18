@@ -30,11 +30,23 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
 "overview_path": [
     { "latitude": "Latitude", "longitude": "Longitude" }
 ],
+"geometry": [
+    { "latitude": "Latitude", "longitude": "Longitude" }
+] || null,
+"waypoints": [
+    {
+        "coordinates": { "latitude": "Latitude", "longitude": "Longitude" },
+        "departure": { "seconds": "Unix seconds", "text": "ISO 8601 time" } || null,
+        "arrival": { "seconds": "Unix seconds", "text": "ISO 8601 time" } || null
+    }
+],
 "legs": [
     {
         "distance": { "meters": "Distance in meters", "text": "Human readable distance" },
         "duration": { "seconds": "Duration in seconds", "text": "Human readable duration" },
         "duration_in_traffic": { "seconds": "Seconds", "text": "Text" } || null,
+        "departure": { "seconds": "Unix seconds", "text": "ISO 8601 time" } || null,
+        "arrival": { "seconds": "Unix seconds", "text": "ISO 8601 time" } || null,
         "steps": [
             {
                 "instructions": "Raw HTML instructions, e.g. <step maneuver='DEPART' ...>",
@@ -48,13 +60,13 @@ Check [Reporting Issues](#reporting-issues) if you find any issues with this doc
 ] || []
 ```
 
-The above format is self-explanatory. `duration_in_traffic` and `duration_range` are populated for driving-style routes; transit-style alternatives may omit them and return `null`.
+`duration_in_traffic` and `duration_range` are populated for driving-style routes; transit-style alternatives may omit them and return `null`.
 
 `legs` holds one entry per waypoint interval: a direct trip has one leg, and each intermediate waypoint adds one. A leg's `duration` (and `duration_in_traffic`, when Google supplies it) is the time between its two waypoints. The endpoint returns no departure or arrival clock times for driving, so derive them by chaining the leg durations from a known departure — see the [endpoint page](../endpoints/previewdirections.md#per-leg-timing).
 
 For a `polyline` route, `legs[].departure` / `legs[].arrival` carry the chained clock time of each leg, and `waypoints` lists the simplified control points with the same times (the dense input line is in `overview_path`). A non-polyline route returns `waypoints: []` and null leg times.
 
-`overview_path` is an approximate path derived from the step boundaries: one coordinate per step (its `start_location`) followed by the destination. It is a simplified skeleton, not a dense encoded polyline, because the endpoint does not return one. When `waypoints` are supplied each stopover adds an extra leg and its own steps to the path.
+`overview_path` is the route's line. For a plain request it is an approximate skeleton assembled from each step's `start_location` plus the route's end, because the endpoint only returns a real line when the geometry flag is sent. For a `polyline` request it is the caller's dense input instead, and `geometry` holds Google's own road line whenever the `snap` pass ran. `geometry` is `null` when no line was requested.
 
 # Reporting Issues
 
