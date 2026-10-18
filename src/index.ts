@@ -34,7 +34,7 @@ export type {
  * @param options.url         - Full Google Maps directions URL.
  * @param options.origin      - Origin query or location (used without a URL).
  * @param options.destination - Destination query or location (used without a URL).
- * @param options.waypoints   - Intermediate stopover waypoints.
+ * @param options.waypoints   - Intermediate stopover waypoints (at most `MAX_INTERMEDIATE_WAYPOINTS`).
  * @param options.polyline    - Encoded polyline or coordinate path to evaluate; takes precedence over origin/destination/waypoints. A long path is simplified, split into request-sized chunks and routed in order, returning one merged route (always parsed, whatever `clean` is).
  * @param options.travel_mode - Optional travel mode (`driving`, `walking`, `bicycling`, `two_wheeler`).
  * @param options.departure_time - Departure time (`Date` or Unix seconds) to plan the trip for.
@@ -42,6 +42,8 @@ export type {
  * @param options.simplify    - Polyline Douglas-Peucker tolerance in metres, defaults to `10` (`0` disables).
  * @param options.max_gap     - Longest segment after subdivision, in metres, defaults to `100` (`0` disables).
  * @param options.max_points_per_request - Points per request for a polyline, defaults to `100`.
+ * @param options.snap        - Route a sparse control set and time Google's road line so a polyline follows the roads instead of detouring at every point, defaults to `true`.
+ * @param options.snap_gap    - Spacing of the sparse control set used by `snap`, in metres, defaults to `500`.
  * @param options.language    - Response language (`hl`), defaults to `en`.
  * @param options.region      - Region bias (`gl`), defaults to `us`.
  * @param options.clean       - When `true`, return parsed `ParsedRoute` objects.
