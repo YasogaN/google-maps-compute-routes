@@ -77,3 +77,122 @@ export function decodePolyline(encoded: string): Coordinates[] {
 
     return coordinates;
 }
+
+/** Mean Earth radius in metres. */
+const EARTH_RADIUS_M = 6371008.8;
+
+/**
+ * Great-circle distance between two coordinates, in metres.
+ *
+ * @param a The first coordinate.
+ * @param b The second coordinate.
+ * @returns The distance in metres.
+ */
+export function metersBetween(a: Coordinates, b: Coordinates): number {
+    const lat1 = (a.latitude * Math.PI) / 180;
+    const lat2 = (b.latitude * Math.PI) / 180;
+    const halfLat = (lat2 - lat1) / 2;
+    const halfLng = ((b.longitude - a.longitude) * Math.PI) / 360;
+    const h = Math.sin(halfLat) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(halfLng) ** 2;
+    return 2 * EARTH_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/**
+ * Project a coordinate onto a local east/north metre plane centred on `origin`.
+ *
+ * Accurate at the scale of a route; it is only used to measure distances of a
+ * few metres to a few kilometres.
+ */
+function localMeters(point: Coordinates, origin: Coordinates): { x: number; y: number } {
+    const latRad = (origin.latitude * Math.PI) / 180;
+    return {
+        x: (((point.longitude - origin.longitude) * Math.PI) / 180) * EARTH_RADIUS_M * Math.cos(latRad),
+        y: (((point.latitude - origin.latitude) * Math.PI) / 180) * EARTH_RADIUS_M,
+    };
+}
+
+/**
+ * Distance in metres from `point` to the segment `a`-`b`.
+ */
+function distanceToSegment(point: Coordinates, a: Coordinates, b: Coordinates): number {
+    const p = localMeters(point, a);
+    const end = localMeters(b, a);
+    const lengthSquared = end.x * end.x + end.y * end.y;
+    if (lengthSquared === 0) return Math.hypot(p.x, p.y);
+
+    const t = Math.max(0, Math.min(1, (p.x * end.x + p.y * end.y) / lengthSquared));
+    return Math.hypot(p.x - t * end.x, p.y - t * end.y);
+}
+
+/**
+ * Simplify a path with the Douglas-Peucker algorithm.
+ *
+ * Keeps the endpoints and every point that lies farther than `toleranceMeters`
+ * from the chord it would otherwise be dropped onto. Corners survive, and
+ * collinear or near-collinear points on a straight are removed, so a densely
+ * sampled polyline collapses to a small set of control points that still
+ * follows the original shape.
+ *
+ * @param coordinates    The path to simplify (not mutated).
+ * @param toleranceMeters Maximum deviation to allow, in metres. Zero or less disables simplification.
+ * @returns The simplified coordinates (a new array).
+ */
+export function simplifyPolyline(coordinates: Coordinates[], toleranceMeters: number): Coordinates[] {
+    if (coordinates.length <= 2 || toleranceMeters <= 0) return coordinates.slice();
+
+    const keep = new Array<boolean>(coordinates.length).fill(false);
+    const last = coordinates.length - 1;
+    keep[0] = true;
+    keep[last] = true;
+
+    // An explicit stack rather than recursion: a long polyline could nest deeply.
+    const stack: Array<[number, number]> = [[0, last]];
+    while (stack.length > 0) {
+        const [first, end] = stack.pop()!;
+        let farthest = -1;
+        let maxDistance = 0;
+        for (let i = first + 1; i < end; i++) {
+            const distance = distanceToSegment(coordinates[i]!, coordinates[first]!, coordinates[end]!);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                farthest = i;
+            }
+        }
+        if (maxDistance > toleranceMeters) {
+            keep[farthest] = true;
+            stack.push([first, farthest], [farthest, end]);
+        }
+    }
+
+    return coordinates.filter((_, index) => keep[index]);
+}
+
+/**
+ * Insert interpolated points so no segment is longer than `maxSegmentMeters`.
+ *
+ * A simplified path only pins the route at its control points; Google picks the
+ * road in between. Capping the gap keeps that freedom small while still using
+ * far fewer stopovers than dense sampling.
+ *
+ * @param coordinates       The path to subdivide (not mutated).
+ * @param maxSegmentMeters  The longest segment to allow, in metres. Zero or less disables subdivision.
+ * @returns The subdivided coordinates (a new array).
+ */
+export function subdividePolyline(coordinates: Coordinates[], maxSegmentMeters: number): Coordinates[] {
+    if (coordinates.length < 2 || maxSegmentMeters <= 0) return coordinates.slice();
+
+    const subdivided: Coordinates[] = [coordinates[0]!];
+    for (let i = 0; i < coordinates.length - 1; i++) {
+        const from = coordinates[i]!;
+        const to = coordinates[i + 1]!;
+        const parts = Math.max(1, Math.ceil(metersBetween(from, to) / maxSegmentMeters));
+        for (let part = 1; part <= parts; part++) {
+            const ratio = part / parts;
+            subdivided.push({
+                latitude: from.latitude + (to.latitude - from.latitude) * ratio,
+                longitude: from.longitude + (to.longitude - from.longitude) * ratio,
+            });
+        }
+    }
+    return subdivided;
+}
